@@ -15,6 +15,16 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 
+/**
+ * Startet einen HTTP-Server, über den die Kommunikation mit dem Konfigurations-
+ * service abläuft. Beim Start des Servers werden auch die Routen für den
+ * REST-Service registriert.
+ * 
+ * Standardport 8080
+ * 
+ * @author andor.ertsey
+ *
+ */
 @Dependent
 public class ConfGatewayVerticle extends AbstractVerticle
 {

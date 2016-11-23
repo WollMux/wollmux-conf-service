@@ -19,6 +19,12 @@ import io.vertx.core.logging.Logger;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 
+/**
+ * Ein Cache für Service-Proxies von registrierten ConfServices.
+ * 
+ * @author andor.ertsey
+ *
+ */
 @ApplicationScoped
 public class ServiceCache
 {
@@ -50,6 +56,12 @@ public class ServiceCache
     serviceDiscovery.close();
   }
 
+  /**
+   * Gibt einen vorher gecachten Service-Proxy zurück.
+   * 
+   * @param name Name des Service zu dem der Proxy gehört.
+   * @return ConfService-Proxy oder null
+   */
   public ConfService getService(String name)
   {
     if (serviceCache.containsKey(name))
@@ -80,7 +92,8 @@ public class ServiceCache
               serviceCache.put(serviceName, confService);
             } else
             {
-              log.error("Proxy for service " + serviceName + " could not be created.", res1.cause());
+              log.error("Proxy for service " + serviceName + 
+        	  " could not be created.", res1.cause());
             }
           });
         }
@@ -100,7 +113,9 @@ public class ServiceCache
     }
   }
 
-  public void consumeDiscoveryAnnounce(@Observes @VertxConsumer("vertx.discovery.announce") VertxEvent event)
+  
+  protected void consumeDiscoveryAnnounce(
+      @Observes @VertxConsumer("vertx.discovery.announce") VertxEvent event)
   {
     JsonObject json = (JsonObject) event.getMessageBody();
     String status = json.getString("status");
@@ -120,6 +135,12 @@ public class ServiceCache
     }
   }
   
+  /**
+   * Pingt einen Service. Wenn der Service nicht antwortet, wird er aus der 
+   * Liste der gecachten Services gelöscht.
+   * 
+   * @param name Vollständiger Name des Service.
+   */
   public void validateProxy(String name)
   {
     ping(name).setHandler(res -> {
@@ -131,6 +152,12 @@ public class ServiceCache
     });
   }
   
+  /**
+   * Hilfsmethode zum Pingen eines ConfService-Services.
+   * 
+   * @param name
+   * @return
+   */
   public Future<Void> ping(String name)
   {
     Future<Void> future = Future.future();

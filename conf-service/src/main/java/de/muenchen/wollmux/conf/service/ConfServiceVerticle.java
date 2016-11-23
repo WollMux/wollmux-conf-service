@@ -19,6 +19,19 @@ import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ProxyHelper;
 
+/**
+ * Registriert den eigentlichen Konfigurationsservice, der für eine 
+ * Konfiguration per Organisationseinheit verantwortlich ist.
+ * Zusätzlich wird ein Ping-Event (conf-service-<unit>-ping) registriert,
+ * über den der Status des Service geprüft werden kann. Das Event gibt auf jede
+ * Anfrage 'ping' zurück.
+ * 
+ *  Der Name des Service wird über die Environmentvariable oder das System-
+ *  Property mit dem Namen ENV_CONFSERVICE_UNIT gesetzt.
+ *  
+ * @author andor.ertsey
+ *
+ */
 @Dependent
 public class ConfServiceVerticle extends AbstractVerticle
 {
@@ -30,9 +43,9 @@ public class ConfServiceVerticle extends AbstractVerticle
   @Inject
   Logger log;
 
-  @Config("referat")
+  @Config("unit")
   @Inject
-  private String referat;
+  private String unit;
 
   @Inject
   private ConfService confService;
@@ -40,8 +53,8 @@ public class ConfServiceVerticle extends AbstractVerticle
   @Override
   public void start(Future<Void> startFuture) throws Exception
   {
-    String address = ConfService.CONF_SERVICE_ADDRESS + referat;
-    String serviceName = ConfService.CONF_SERVICE_BASE_NAME + referat;
+    String address = ConfService.CONF_SERVICE_ADDRESS + unit;
+    String serviceName = ConfService.CONF_SERVICE_BASE_NAME + unit;
 
     pingConsumer = vertx.eventBus().consumer(serviceName + "-ping");
     pingConsumer.handler(msg -> {
@@ -56,7 +69,7 @@ public class ConfServiceVerticle extends AbstractVerticle
     {
       if (res.succeeded())
       {
-        log.info("Service ConfService " + referat + " published.");
+        log.info("Service ConfService " + unit + " published.");
         startFuture.complete();
       } else
       {

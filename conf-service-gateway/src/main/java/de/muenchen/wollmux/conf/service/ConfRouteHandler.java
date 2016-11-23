@@ -10,6 +10,17 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Dies ist die Hauptroute zur Kommunikation mit dem Konfigurationsservice.
+ * Der Request zum Aufruf der Route enthält die Name der Konfiguration 
+ * (bzw. des Referats) und das Format in dem die Konfiuration zurückgeliefert
+ * werden soll.
+ * Die Route ruft den {@link ConfService} aus dem {@link ServiceCache} abhängig
+ * vom Namen auf.
+ * 
+ * @author andor.ertsey
+ *
+ */
 @WebRoute(ConfGatewayVerticle.BASE_PATH + "/*")
 public class ConfRouteHandler implements Handler<RoutingContext>
 {
@@ -27,11 +38,13 @@ public class ConfRouteHandler implements Handler<RoutingContext>
   @Override
   public void handle(RoutingContext r)
   {
-    log.info("Request from " + r.request().remoteAddress() + ": " + r.request().rawMethod() + " " + r.request().uri());
+    log.info("Request from " + r.request().remoteAddress() + ": " + r.request()
+    	.rawMethod() + " " + r.request().uri());
 
     r.response().setChunked(true);
 
-    String path = StringUtils.remove(r.request().uri(), ConfGatewayVerticle.BASE_PATH);
+    String path = StringUtils.remove(r.request().uri(), 
+	ConfGatewayVerticle.BASE_PATH);
 
     String[] parts = StringUtils.strip(path, "/").split("/");
 
