@@ -1,5 +1,6 @@
 package de.muenchen.wollmux.conf.service;
 
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 import org.jboss.weld.vertx.web.WeldWebVerticle;
@@ -18,6 +19,7 @@ import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ProxyHelper;
 
+@Dependent
 public class ConfServiceVerticle extends AbstractVerticle
 {
   private MessageConsumer<JsonObject> messageConsumer;
@@ -28,7 +30,7 @@ public class ConfServiceVerticle extends AbstractVerticle
   @Inject
   Logger log;
 
-  @Config("confservice_referat")
+  @Config("referat")
   @Inject
   private String referat;
 
@@ -54,7 +56,7 @@ public class ConfServiceVerticle extends AbstractVerticle
     {
       if (res.succeeded())
       {
-        log.info("Service ConfService published.");
+        log.info("Service ConfService " + referat + " published.");
         startFuture.complete();
       } else
       {
@@ -87,7 +89,8 @@ public class ConfServiceVerticle extends AbstractVerticle
 
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
-          public void run()
+          @Override
+	  public void run()
           {
             vertx.close();
           }

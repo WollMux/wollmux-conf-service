@@ -1,5 +1,6 @@
 package de.muenchen.wollmux.conf.service;
 
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 import org.jboss.weld.vertx.web.WeldWebVerticle;
@@ -14,8 +15,11 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 
+@Dependent
 public class ConfGatewayVerticle extends AbstractVerticle
 {
+  private static final int PORT = 8080;
+
   static final String BASE_PATH = "/api/v1";
 
   @Inject
@@ -41,6 +45,16 @@ public class ConfGatewayVerticle extends AbstractVerticle
       if (res.succeeded())
       {
         final Vertx vertx = res.result();
+        
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+          @Override
+	  public void run()
+          {
+            vertx.close();
+          }
+        });
+        
         final WeldWebVerticle weldVerticle = new WeldWebVerticle();
 
         vertx.deployVerticle(weldVerticle, res1 ->
@@ -52,7 +66,7 @@ public class ConfGatewayVerticle extends AbstractVerticle
             weldVerticle.registerRoutes(router);
             vertx.deployVerticle(weldVerticle.container().select(ConfGatewayVerticle.class).get());
             HttpServer server = vertx.createHttpServer();
-            server.requestHandler(router::accept).listen(8080, res2 ->
+            server.requestHandler(router::accept).listen(PORT, res2 ->
             {
               if (res2.succeeded())
               {

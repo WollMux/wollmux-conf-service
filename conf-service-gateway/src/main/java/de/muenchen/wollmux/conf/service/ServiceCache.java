@@ -4,9 +4,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.jboss.weld.vertx.VertxConsumer;
 import org.jboss.weld.vertx.VertxEvent;
@@ -19,7 +19,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 
-@Singleton
+@ApplicationScoped
 public class ServiceCache
 {
   @Inject
@@ -114,7 +114,9 @@ public class ServiceCache
       });
     } else if (status.equals("DOWN") || status.equals("OUT_OF_SERVICE"))
     {
-      removeService(json.getString("name"));
+      String serviceName = json.getString("name");
+      log.info("Service was removed: " + serviceName);
+      removeService(serviceName);
     }
   }
   
