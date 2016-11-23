@@ -36,12 +36,12 @@ public class ServiceCache
 
   private ConcurrentHashMap<String, ConfService> serviceCache = new ConcurrentHashMap<>();
 
+  @Inject
   private ServiceDiscovery serviceDiscovery;
 
   @PostConstruct
   protected void init()
   {
-    serviceDiscovery = ServiceDiscovery.create(vertx);
     locateServices();
   }
 
