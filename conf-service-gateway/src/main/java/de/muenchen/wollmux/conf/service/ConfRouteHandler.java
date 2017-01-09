@@ -42,9 +42,9 @@ public class ConfRouteHandler implements Handler<RoutingContext>
     	.rawMethod() + " " + r.request().uri());
 
     r.response().setChunked(true);
-
-    String path = StringUtils.remove(r.request().uri(), 
+    String path = StringUtils.remove(r.request().path(),
 	ConfGatewayVerticle.BASE_PATH);
+    String product = r.request().getParam("product");
 
     String[] parts = StringUtils.strip(path, "/").split("/");
 
@@ -57,9 +57,9 @@ public class ConfRouteHandler implements Handler<RoutingContext>
       ConfService cs = confServices.getService(serviceName);
       if (cs != null)
       {
-        if (method.equals("conf"))
+        if ("conf".equals(method))
         {
-          cs.getConf(res2 ->
+          cs.getConf(product, res2 ->
           {
             if (res2.succeeded())
             {

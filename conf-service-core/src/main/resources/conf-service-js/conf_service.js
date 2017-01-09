@@ -22,6 +22,9 @@ var JsonObject = io.vertx.core.json.JsonObject;
 var JConfService = de.muenchen.wollmux.conf.service.ConfService;
 
 /**
+ Interface des Konfigurationsservice. Wird in conf-service implementiert
+ und als Service registriert.
+ 
  @class
 */
 var ConfService = function(j_val) {
@@ -30,14 +33,16 @@ var ConfService = function(j_val) {
   var that = this;
 
   /**
+   Liefert einen String im WollMux-Conf-Format.
 
    @public
+   @param product {string} 
    @param resultHandler {function} 
    */
-  this.getConf = function(resultHandler) {
+  this.getConf = function(product, resultHandler) {
     var __args = arguments;
-    if (__args.length === 1 && typeof __args[0] === 'function') {
-      j_confService["getConf(io.vertx.core.Handler)"](function(ar) {
+    if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
+      j_confService["getConf(java.lang.String,io.vertx.core.Handler)"](product, function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
       } else {
@@ -48,14 +53,16 @@ var ConfService = function(j_val) {
   };
 
   /**
+   Liefert einen String im JSON-Format.
 
    @public
+   @param product {string} 
    @param resultHandler {function} 
    */
-  this.getJSON = function(resultHandler) {
+  this.getJSON = function(product, resultHandler) {
     var __args = arguments;
-    if (__args.length === 1 && typeof __args[0] === 'function') {
-      j_confService["getJSON(io.vertx.core.Handler)"](function(ar) {
+    if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
+      j_confService["getJSON(java.lang.String,io.vertx.core.Handler)"](product, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {

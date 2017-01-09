@@ -17,16 +17,16 @@ import io.vertx.core.json.JsonObject;
 @VertxGen
 public interface ConfService
 {
-  public final static String CONF_SERVICE_ADDRESS = "conf.service.";
-  public final static String CONF_SERVICE_BASE_NAME = "conf-service-";
+  public static final String CONF_SERVICE_ADDRESS = "conf.service.";
+  public static final String CONF_SERVICE_BASE_NAME = "conf-service-";
 
   /**
    * Liefert einen String im WollMux-Conf-Format.
    */
-  public void getConf(Handler<AsyncResult<String>> resultHandler);
+  public void getConf(String product, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Liefert einen String im JSON-Format.
    */
-  public void getJSON(Handler<AsyncResult<JsonObject>> resultHandler);
+  public void getJSON(String product, Handler<AsyncResult<JsonObject>> resultHandler);
 }

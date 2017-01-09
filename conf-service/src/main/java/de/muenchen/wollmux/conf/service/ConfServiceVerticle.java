@@ -3,6 +3,7 @@ package de.muenchen.wollmux.conf.service;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
+import org.apache.camel.main.Main;
 import org.jboss.weld.vertx.web.WeldWebVerticle;
 
 import de.muenchen.wollmux.conf.service.core.beans.Config;
@@ -38,8 +39,6 @@ public class ConfServiceVerticle extends AbstractVerticle
   private MessageConsumer<JsonObject> messageConsumer;
   private MessageConsumer<String> pingConsumer;
 
-  private Record confServiceRecord;
-
   @Inject
   Logger log;
 
@@ -50,6 +49,9 @@ public class ConfServiceVerticle extends AbstractVerticle
   @Inject
   private ConfService confService;
 
+  @Inject
+  private Main camelMain;
+
   @Override
   public void start(Future<Void> startFuture) throws Exception
   {
@@ -57,14 +59,14 @@ public class ConfServiceVerticle extends AbstractVerticle
     String serviceName = ConfService.CONF_SERVICE_BASE_NAME + unit;
 
     pingConsumer = vertx.eventBus().consumer(serviceName + "-ping");
-    pingConsumer.handler(msg -> {
-      msg.reply("ping");
-    });
+    pingConsumer.handler(msg -> msg.reply("ping"));
+
+    camelMain.start();
 
     messageConsumer = ProxyHelper.registerService(ConfService.class, vertx, confService, address, 5000);
     ServiceDiscovery serviceDiscovery = ServiceDiscovery.create(vertx);
 
-    confServiceRecord = EventBusService.createRecord(serviceName, address, ConfService.class);
+    Record confServiceRecord = EventBusService.createRecord(serviceName, address, ConfService.class);
     serviceDiscovery.publish(confServiceRecord, res ->
     {
       if (res.succeeded())
@@ -87,6 +89,7 @@ public class ConfServiceVerticle extends AbstractVerticle
     log.info("ConfServiceVerticle stopping.");
     pingConsumer.unregister();
     ProxyHelper.unregisterService(messageConsumer);
+    camelMain.stop();
   }
 
   public static void main(String[] args)
@@ -125,7 +128,7 @@ public class ConfServiceVerticle extends AbstractVerticle
             });
           } else
           {
-            log.error("Deployment of WeldWebVerticle failed.", res.cause());
+            log.error("Deployment of WeldWebVerticle failed.", result.cause());
           }
         });
       }
