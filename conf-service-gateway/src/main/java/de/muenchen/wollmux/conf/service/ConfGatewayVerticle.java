@@ -19,9 +19,9 @@ import io.vertx.ext.web.handler.BodyHandler;
  * Startet einen HTTP-Server, über den die Kommunikation mit dem Konfigurations-
  * service abläuft. Beim Start des Servers werden auch die Routen für den
  * REST-Service registriert.
- * 
+ *
  * Standardport 8080
- * 
+ *
  * @author andor.ertsey
  *
  */
@@ -55,7 +55,7 @@ public class ConfGatewayVerticle extends AbstractVerticle
       if (res.succeeded())
       {
         final Vertx vertx = res.result();
-        
+
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
           @Override
@@ -64,7 +64,7 @@ public class ConfGatewayVerticle extends AbstractVerticle
             vertx.close();
           }
         });
-        
+
         final WeldWebVerticle weldVerticle = new WeldWebVerticle();
 
         vertx.deployVerticle(weldVerticle, res1 ->

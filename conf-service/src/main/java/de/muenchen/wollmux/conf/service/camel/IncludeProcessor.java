@@ -58,12 +58,14 @@ public class IncludeProcessor implements AsyncProcessor
   public void process(Exchange exchange) throws Exception
   {
     String message = exchange.getIn().getBody(String.class);
-    Pattern pattern = Pattern.compile("%include \\\"(.*)\\\"", Pattern.UNICODE_CASE | Pattern.MULTILINE);
+    Pattern pattern = Pattern.compile("%include \\\"(.*)\\\"",
+        Pattern.UNICODE_CASE | Pattern.MULTILINE);
     Matcher matcher = pattern.matcher(message);
     while (matcher.find())
     {
       String filename = matcher.group(1);
-      String content = FileUtils.readFileToString(Paths.get(path, filename).toFile(), StandardCharsets.UTF_8);
+      String content = FileUtils.readFileToString(
+          Paths.get(path, filename).toFile(), StandardCharsets.UTF_8);
       message = matcher.replaceFirst(Matcher.quoteReplacement(content));
       matcher.reset(message);
     }

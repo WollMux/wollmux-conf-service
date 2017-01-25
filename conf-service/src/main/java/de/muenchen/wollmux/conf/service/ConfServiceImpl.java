@@ -3,11 +3,7 @@ package de.muenchen.wollmux.conf.service;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.spi.Synchronization;
-
+import de.muenchen.wollmux.conf.service.caching.ConfigCache;
 import de.muenchen.wollmux.conf.service.exceptions.UnknownKonfigurationException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -30,39 +26,40 @@ public class ConfServiceImpl implements ConfService
   Logger log;
 
   @Inject
-  private CamelContext camelContext;
+  ConfigCache configCache;
+
+  @Inject
+  private ConfigCache cache;
 
   /**
    * Liefert einen String im WollMux-Conf-Format.
    */
   @Override
-  public void getConf(String product,
-      Handler<AsyncResult<String>> resultHandler)
+  public void getConf(String product, Handler<AsyncResult<String>> resultHandler)
   {
     try
     {
-      ProducerTemplate producer = camelContext.createProducerTemplate();
-      producer.asyncCallbackRequestBody("direct:in",
-          getFilename(product, "conf"), new Synchronization()
-          {
-
-            @Override
-            public void onComplete(Exchange exchange)
-            {
-              resultHandler.handle(Future
-                  .succeededFuture(exchange.getOut().getBody(String.class)));
-            }
-
-            @Override
-            public void onFailure(Exchange exchange)
-            {
-              resultHandler.handle(Future.failedFuture(
-                  "Die Konfiguration konnte nicht gelesen werden"));
-            }
-          });
-    } catch (UnknownKonfigurationException ex)
+      String type = "conf";
+      String filename = getFilename(product, type);
+      // TODO Müssen die Handler beendet werden?
+      String config = configCache.getConfig(filename, res -> {
+        if (res.succeeded())
+        {
+          resultHandler.handle(Future.succeededFuture(res.result()));
+          cache.putConfig(filename, res.result());
+        } else
+        {
+          resultHandler.handle(Future.failedFuture(res.cause()));
+        }
+      });
+      // Konfiguration kommt aus dem Cache
+      if (config != null)
+      {
+        resultHandler.handle(Future.succeededFuture(config));
+      }
+    } catch (UnknownKonfigurationException e)
     {
-      resultHandler.handle(Future.failedFuture(ex));
+      resultHandler.handle(Future.failedFuture(e));
     }
   }
 
@@ -106,5 +103,4 @@ public class ConfServiceImpl implements ConfService
           String.format("Für das Produkt %s gibt es keine Konfiguration.", product));
     }
   }
-
 }

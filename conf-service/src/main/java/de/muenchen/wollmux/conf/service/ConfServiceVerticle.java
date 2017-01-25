@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import org.apache.camel.main.Main;
 import org.jboss.weld.vertx.web.WeldWebVerticle;
 
+import de.muenchen.wollmux.conf.service.caching.ConfigWatcher;
 import de.muenchen.wollmux.conf.service.core.beans.Config;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -21,15 +22,15 @@ import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ProxyHelper;
 
 /**
- * Registriert den eigentlichen Konfigurationsservice, der für eine 
+ * Registriert den eigentlichen Konfigurationsservice, der für eine
  * Konfiguration per Organisationseinheit verantwortlich ist.
  * Zusätzlich wird ein Ping-Event (conf-service-<unit>-ping) registriert,
  * über den der Status des Service geprüft werden kann. Das Event gibt auf jede
  * Anfrage 'ping' zurück.
- * 
+ *
  *  Der Name des Service wird über die Environmentvariable oder das System-
  *  Property mit dem Namen ENV_CONFSERVICE_UNIT gesetzt.
- *  
+ *
  * @author andor.ertsey
  *
  */
@@ -52,6 +53,9 @@ public class ConfServiceVerticle extends AbstractVerticle
   @Inject
   private Main camelMain;
 
+  @Inject
+  private ConfigWatcher watcher;
+
   @Override
   public void start(Future<Void> startFuture) throws Exception
   {
@@ -60,6 +64,8 @@ public class ConfServiceVerticle extends AbstractVerticle
 
     pingConsumer = vertx.eventBus().consumer(serviceName + "-ping");
     pingConsumer.handler(msg -> msg.reply("ping"));
+
+    vertx.setPeriodic(5000, id -> watcher.processEvent());
 
     camelMain.start();
 
