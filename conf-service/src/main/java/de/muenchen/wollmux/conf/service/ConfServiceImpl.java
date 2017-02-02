@@ -1,9 +1,12 @@
 package de.muenchen.wollmux.conf.service;
 
+import java.util.concurrent.CompletableFuture;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import de.muenchen.wollmux.conf.service.caching.ConfigCache;
+import org.apache.camel.ProducerTemplate;
+
 import de.muenchen.wollmux.conf.service.exceptions.UnknownKonfigurationException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -26,11 +29,8 @@ public class ConfServiceImpl implements ConfService
   Logger log;
 
   @Inject
-  ConfigCache configCache;
-
-  @Inject
-  private ConfigCache cache;
-
+  private ProducerTemplate producerTemplate;
+  
   /**
    * Liefert einen String im WollMux-Conf-Format.
    */
@@ -42,16 +42,17 @@ public class ConfServiceImpl implements ConfService
       String type = "conf";
       String filename = getFilename(product, type);
       // TODO Müssen die Handler beendet werden?
-      String config = configCache.getConfig(filename, res -> {
+      String config = getConfig(filename, res -> {
         if (res.succeeded())
         {
           resultHandler.handle(Future.succeededFuture(res.result()));
-          cache.putConfig(filename, res.result());
+          //cache.putConfig(filename, res.result());
         } else
         {
           resultHandler.handle(Future.failedFuture(res.cause()));
         }
       });
+      
       // Konfiguration kommt aus dem Cache
       if (config != null)
       {
@@ -62,6 +63,19 @@ public class ConfServiceImpl implements ConfService
       resultHandler.handle(Future.failedFuture(e));
     }
   }
+  
+  public String getConfig(String filename, Handler<AsyncResult<String>> handler)
+  {
+    try
+    {
+      CompletableFuture<Object> fut = producerTemplate.asyncRequestBody("direct:in", filename);
+      return (String) fut.get();
+    } catch (Exception ex)
+    {
+      return null;
+    }
+  }
+
 
   /**
    * Liefert einen String im JSON-Format.

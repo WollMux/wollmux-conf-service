@@ -1,7 +1,6 @@
 package de.muenchen.wollmux.conf.service.caching;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
@@ -12,7 +11,10 @@ import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.camel.ProducerTemplate;
+
 import de.muenchen.wollmux.conf.service.core.beans.Config;
+import io.vertx.core.logging.Logger;
 
 /**
  * Ein Service, der den Ordner mit der Konfiguration auf Änderungen untersucht
@@ -25,27 +27,46 @@ import de.muenchen.wollmux.conf.service.core.beans.Config;
 public class ConfigWatcher
 {
   @Inject
-  @Config("path")
-  String path;
-
+  Logger log;
+  
   @Inject
-  ConfigCache cache;
+  @Config("path")
+  private String path;
 
   private WatchService watcher;
+  
+  @Inject
+  private ProducerTemplate producerTemplate; 
 
+  @Inject
+  public ConfigWatcher(WatchService watcher) {
+    this.watcher = watcher;
+  }
+  
   @PostConstruct
-  private void init() throws IOException
+  private void init()
   {
-    watcher = FileSystems.getDefault().newWatchService();
-    Paths.get(path).register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
-        StandardWatchEventKinds.ENTRY_DELETE,
-        StandardWatchEventKinds.ENTRY_MODIFY);
+    try
+    {
+      Paths.get(path).register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
+          StandardWatchEventKinds.ENTRY_DELETE,
+          StandardWatchEventKinds.ENTRY_MODIFY);
+    } catch (IOException ex)
+    {
+      log.error("Watcher wurde nicht registriert.", ex);
+    }
   }
 
   @PreDestroy
-  private void destory() throws IOException
+  private void destroy()
   {
-    watcher.close();
+    try
+    {
+      watcher.close();
+    } catch (IOException ex)
+    {
+      log.error("Watcher wurde nicht geschlossen.", ex);
+    }
   }
 
   /**
@@ -57,7 +78,7 @@ public class ConfigWatcher
     WatchKey key = watcher.poll();
     if (key != null)
     {
-      cache.invalidate();
+      producerTemplate.requestBody("direct:invalidateCache", new Object());
       /*
        * Alle Events vom Key entfernen, sonst wird er jedes Mal wieder in die
        * Queue des WatchService gelegt. Sobald es neue Events gibt, wird der Key

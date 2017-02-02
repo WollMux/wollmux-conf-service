@@ -1,11 +1,16 @@
 package de.muenchen.wollmux.conf.service.beans;
 
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.WatchService;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.main.Main;
 
 import de.muenchen.wollmux.conf.service.camel.ConfRouteBuilder;
@@ -46,5 +51,16 @@ public class Producers
   public CamelContext getContext(Main main)
   {
     return main.getCamelContexts().stream().findFirst().get();
+  }
+  
+  @Produces 
+  ProducerTemplate getProducerTemplate(CamelContext ctx)
+  {
+    return ctx.createProducerTemplate();
+  }
+  
+  @Produces WatchService getWatchService() throws IOException
+  {
+    return FileSystems.getDefault().newWatchService();
   }
 }
