@@ -49,7 +49,7 @@ public class ConfRouteHandler implements Handler<RoutingContext>
 
     r.response().setChunked(true);
     String path = StringUtils.remove(r.request().path(),
-	ConfGatewayVerticle.BASE_PATH);
+        ConfGatewayVerticle.BASE_PATH);
     String product = r.request().getParam("product");
 
     String[] parts = StringUtils.strip(path, "/").split("/");
@@ -69,8 +69,10 @@ public class ConfRouteHandler implements Handler<RoutingContext>
           {
             if (res2.succeeded())
             {
-              r.response().setStatusCode(200);
+              r.response().setChunked(true);
+              r.response().putHeader("Content-Type", "text/plain; charset=utf-8");
               stream(res2.result(), r.response());
+              r.response().setStatusCode(200);
               r.response().end();
             } else
             {

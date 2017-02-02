@@ -112,7 +112,7 @@ public class ConfServiceVerticle extends AbstractVerticle
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
           @Override
-	  public void run()
+          public void run()
           {
             vertx.close();
           }

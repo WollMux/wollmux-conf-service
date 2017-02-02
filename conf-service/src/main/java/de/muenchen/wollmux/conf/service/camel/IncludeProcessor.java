@@ -22,7 +22,7 @@ import io.vertx.core.logging.Logger;
  * auch asynchron arbeiten.
  *
  * Der Basispfad für die Dateien wird über die Environmentvariable oder das
- * System-Property mit dem Namen ENV_CONFSERVICE_UNIT gesetzt.
+ * System-Property mit dem Namen ENV_CONFSERVICE_PATH gesetzt.
  *
  * @author daniel.sikeler
  *
