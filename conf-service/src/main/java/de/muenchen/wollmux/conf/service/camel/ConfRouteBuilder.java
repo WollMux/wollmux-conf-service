@@ -18,7 +18,7 @@ public class ConfRouteBuilder extends RouteBuilder
   @Override
   public void configure() throws Exception
   {
-    from(ROUTE_GETCONF)
+    from(ROUTE_GETCONF).id("getConf")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_GET))
       .setHeader(CacheConstants.CACHE_KEY, body())
       .to("cache://ConfCache")
@@ -29,7 +29,7 @@ public class ConfRouteBuilder extends RouteBuilder
         .to("cache://ConfCache")
       .end();
     
-    from(ROUTE_INVALIDATE_CACHE)
+    from(ROUTE_INVALIDATE_CACHE).id("invalidateCache")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_DELETEALL))
       .to("cache://ConfCache");
   }
