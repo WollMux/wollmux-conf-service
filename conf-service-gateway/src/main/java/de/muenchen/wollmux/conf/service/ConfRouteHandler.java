@@ -1,5 +1,7 @@
 package de.muenchen.wollmux.conf.service;
 
+import java.io.ByteArrayInputStream;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -7,6 +9,7 @@ import org.jboss.weld.vertx.web.WebRoute;
 
 import de.muenchen.wollmux.conf.service.core.beans.Config;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.logging.Logger;
 import io.vertx.ext.web.RoutingContext;
@@ -109,17 +112,16 @@ public class ConfRouteHandler implements Handler<RoutingContext>
       response.write(content);
       return;
     }
-    int start = 0;
-    int end = start + chunkSize;
-    while (start < content.length())
+
+    ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
+    byte[] buf = new byte[chunkSize];
+    
+    while (is.available() > 0) 
     {
-      if (end > content.length())
+      if (is.read(buf, 0, chunkSize) > 0)
       {
-        end = content.length();
+        response.write(Buffer.buffer(buf));
       }
-      response.write(content.substring(start, end));
-      start = end + 1;
-      end += chunkSize;
     }
   }
 }

@@ -46,7 +46,6 @@ public class ConfServiceImpl implements ConfService
         if (res.succeeded())
         {
           resultHandler.handle(Future.succeededFuture(res.result()));
-          //cache.putConfig(filename, res.result());
         } else
         {
           resultHandler.handle(Future.failedFuture(res.cause()));
