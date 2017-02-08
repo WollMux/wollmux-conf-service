@@ -1,12 +1,11 @@
 package de.muenchen.wollmux.conf.service;
 
-import java.util.concurrent.CompletableFuture;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.camel.ProducerTemplate;
 
+import de.muenchen.wollmux.conf.service.camel.ConfRouteBuilder;
 import de.muenchen.wollmux.conf.service.exceptions.UnknownKonfigurationException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -30,51 +29,26 @@ public class ConfServiceImpl implements ConfService
 
   @Inject
   private ProducerTemplate producerTemplate;
-  
+
   /**
    * Liefert einen String im WollMux-Conf-Format.
    */
   @Override
-  public void getConf(String product, Handler<AsyncResult<String>> resultHandler)
+  public void getConf(String product,
+      Handler<AsyncResult<String>> resultHandler)
   {
     try
     {
       String type = "conf";
       String filename = getFilename(product, type);
-      // TODO Müssen die Handler beendet werden?
-      String config = getConfig(filename, res -> {
-        if (res.succeeded())
-        {
-          resultHandler.handle(Future.succeededFuture(res.result()));
-        } else
-        {
-          resultHandler.handle(Future.failedFuture(res.cause()));
-        }
-      });
-      
-      // Konfiguration kommt aus dem Cache
-      if (config != null)
-      {
-        resultHandler.handle(Future.succeededFuture(config));
-      }
-    } catch (UnknownKonfigurationException e)
+      String config = producerTemplate
+          .requestBody(ConfRouteBuilder.ROUTE_GETCONF, filename, String.class);
+      resultHandler.handle(Future.succeededFuture(config));
+    } catch (Exception e)
     {
       resultHandler.handle(Future.failedFuture(e));
     }
   }
-  
-  public String getConfig(String filename, Handler<AsyncResult<String>> handler)
-  {
-    try
-    {
-      CompletableFuture<Object> fut = producerTemplate.asyncRequestBody("direct:in", filename);
-      return (String) fut.get();
-    } catch (Exception ex)
-    {
-      return null;
-    }
-  }
-
 
   /**
    * Liefert einen String im JSON-Format.
@@ -112,8 +86,8 @@ public class ConfServiceImpl implements ConfService
     case "seriendruck":
       return String.format(template, "main", type);
     default:
-      throw new UnknownKonfigurationException(
-          String.format("Für das Produkt %s gibt es keine Konfiguration.", product));
+      throw new UnknownKonfigurationException(String
+          .format("Für das Produkt %s gibt es keine Konfiguration.", product));
     }
   }
 }
