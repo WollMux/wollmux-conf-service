@@ -8,9 +8,8 @@ import java.util.regex.Pattern;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.apache.camel.AsyncCallback;
-import org.apache.camel.AsyncProcessor;
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.commons.io.FileUtils;
 
 import de.muenchen.wollmux.conf.service.core.beans.Config;
@@ -28,7 +27,7 @@ import io.vertx.core.logging.Logger;
  *
  */
 @ApplicationScoped
-public class IncludeProcessor implements AsyncProcessor
+public class IncludeProcessor implements Processor
 {
   @Inject
   Logger log;
@@ -36,23 +35,6 @@ public class IncludeProcessor implements AsyncProcessor
   @Config("path")
   @Inject
   private String path;
-
-  @Override
-  public boolean process(Exchange exchange, AsyncCallback callback)
-  {
-    new Thread(() ->
-    {
-      try
-      {
-        process(exchange);
-      } catch (Exception e)
-      {
-        exchange.setException(e);
-      }
-      callback.done(false);
-    }).start();
-    return false;
-  }
 
   @Override
   public void process(Exchange exchange) throws Exception
