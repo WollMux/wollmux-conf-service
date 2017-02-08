@@ -1,6 +1,7 @@
 package de.muenchen.wollmux.conf.service;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 
 import javax.inject.Inject;
 
@@ -115,12 +116,13 @@ public class ConfRouteHandler implements Handler<RoutingContext>
 
     ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
     byte[] buf = new byte[chunkSize];
-    
-    while (is.available() > 0) 
+
+    while (is.available() > 0)
     {
-      if (is.read(buf, 0, chunkSize) > 0)
+      int size = is.read(buf, 0, chunkSize);
+      if (size > 0)
       {
-        response.write(Buffer.buffer(buf));
+        response.write(Buffer.buffer(Arrays.copyOf(buf, size)));
       }
     }
   }
