@@ -14,10 +14,23 @@ public class ConfRouteBuilder extends RouteBuilder
   
   @Inject
   private IncludeProcessor includeProcessor;
+  
+  @Inject 
+  private FileReadProcessor fileReadProcessor; 
 
   @Override
   public void configure() throws Exception
   {
+    from("direct:getFile").id("getFile")
+      .choice().when(header("Protocol").isEqualToIgnoreCase("file"))
+        .to("direct:readLocal")
+      .otherwise()
+        .to("direct:readHttp")
+      .end();
+    
+    from("direct:readConfFile").process(fileReadProcessor)
+      .to(ROUTE_GETCONF);
+    
     from(ROUTE_GETCONF).id("getConf")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_GET))
       .setHeader(CacheConstants.CACHE_KEY, body())

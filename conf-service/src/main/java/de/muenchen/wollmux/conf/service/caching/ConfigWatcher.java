@@ -1,6 +1,7 @@
 package de.muenchen.wollmux.conf.service.caching;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
@@ -48,7 +49,7 @@ public class ConfigWatcher
   {
     try
     {
-      Paths.get(path).register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
+      Paths.get(URI.create(path)).register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
           StandardWatchEventKinds.ENTRY_DELETE,
           StandardWatchEventKinds.ENTRY_MODIFY);
     } catch (IOException ex)

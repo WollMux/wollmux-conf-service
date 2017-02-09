@@ -36,13 +36,13 @@ var ConfService = function(j_val) {
    Liefert einen String im WollMux-Conf-Format.
 
    @public
-   @param product {string} 
+   @param file {string} 
    @param resultHandler {function} 
    */
-  this.getConf = function(product, resultHandler) {
+  this.getFile = function(file, resultHandler) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
-      j_confService["getConf(java.lang.String,io.vertx.core.Handler)"](product, function(ar) {
+      j_confService["getFile(java.lang.String,io.vertx.core.Handler)"](file, function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
       } else {
@@ -56,13 +56,13 @@ var ConfService = function(j_val) {
    Liefert einen String im JSON-Format.
 
    @public
-   @param product {string} 
+   @param file {string} 
    @param resultHandler {function} 
    */
-  this.getJSON = function(product, resultHandler) {
+  this.getJSON = function(file, resultHandler) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
-      j_confService["getJSON(java.lang.String,io.vertx.core.Handler)"](product, function(ar) {
+      j_confService["getJSON(java.lang.String,io.vertx.core.Handler)"](file, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {

@@ -2,6 +2,7 @@ package de.muenchen.wollmux.conf.service;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 import javax.inject.Inject;
 
@@ -61,41 +62,35 @@ public class ConfRouteHandler implements Handler<RoutingContext>
       product = "wollmux";
     }
 
-    String[] parts = StringUtils.strip(path, "/").split("/");
+    LinkedList<String> parts = new LinkedList<>(Arrays.asList(StringUtils.strip(path, "/").split("/")));
 
-    if (parts.length == 2)
+    if (parts.size() > 1)
     {
-      String referat = parts[0];
-      String method = parts[1];
+      String referat = parts.pop();
+      String file = String.join("/", parts);
 
       String serviceName = ConfService.CONF_SERVICE_BASE_NAME + referat;
       ConfService cs = confServices.getService(serviceName);
       if (cs != null)
       {
-        if ("conf".equals(method))
+        cs.getFile(file, res2 ->
         {
-          cs.getConf(product, res2 ->
+          if (res2.succeeded())
           {
-            if (res2.succeeded())
-            {
-              r.response().setChunked(true);
-              r.response().putHeader("Content-Type", "text/plain; charset=utf-8");
-              stream(res2.result(), r.response());
-              r.response().setStatusCode(200);
-              r.response().end();
-            } else
-            {
-              log.error("Calling getConf failed.", res2.cause());
+            r.response().setChunked(true);
+            r.response().putHeader("Content-Type", "text/plain; charset=utf-8");
+            stream(res2.result(), r.response());
+            r.response().setStatusCode(200);
+            r.response().end();
+          } else
+          {
+            log.error("Calling getConf failed.", res2.cause());
 
-              confServices.validateProxy(serviceName);
+            confServices.validateProxy(serviceName);
 
-              r.fail(500);
-            }
-          });
-        } else
-        {
-          r.fail(400);
-        }
+            r.fail(500);
+          }
+        });
       } else
       {
         r.fail(502);

@@ -4,8 +4,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 
-import de.muenchen.wollmux.conf.service.camel.ConfRouteBuilder;
+import de.muenchen.wollmux.conf.service.core.beans.Config;
 import de.muenchen.wollmux.conf.service.exceptions.UnknownKonfigurationException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -29,24 +32,40 @@ public class ConfServiceImpl implements ConfService
 
   @Inject
   private ProducerTemplate producerTemplate;
+  
+  @Inject @Config("path")
+  private String basePath;
 
   /**
    * Liefert einen String im WollMux-Conf-Format.
    */
   @Override
-  public void getConf(String product,
+  public void getFile(String file,
       Handler<AsyncResult<String>> resultHandler)
   {
     try
     {
-      String type = "conf";
-      String filename = getFilename(product, type);
-      String config = producerTemplate
-          .requestBody(ConfRouteBuilder.ROUTE_GETCONF, filename, String.class);
-      resultHandler.handle(Future.succeededFuture(config));
+      String path = StringUtils.appendIfMissing(basePath, "/") + file;
+      String ext = FilenameUtils.getExtension(file);
+
+      UrlValidator validator = new UrlValidator(new String[]{"http", "https", "file"});
+      if (!validator.isValid(path))
+      {
+        resultHandler.handle(Future.failedFuture(String.format("Url %1 is invalid.", path)));
+        return;
+      }
+      
+      if (ext.equals("conf"))
+      {
+        String config = producerTemplate
+            .requestBodyAndHeader("direct:readConfFile", "", "url", path, String.class);
+        resultHandler.handle(Future.succeededFuture(config));
+      }
+      resultHandler.handle(Future.succeededFuture());
     } catch (Exception e)
     {
       resultHandler.handle(Future.failedFuture(e));
+      log.error("getFile failed.", e);
     }
   }
 

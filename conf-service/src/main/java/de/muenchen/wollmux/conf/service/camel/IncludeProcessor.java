@@ -12,7 +12,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.io.FileUtils;
 
-import de.muenchen.wollmux.conf.service.core.beans.Config;
 import io.vertx.core.logging.Logger;
 
 /**
@@ -32,10 +31,6 @@ public class IncludeProcessor implements Processor
   @Inject
   Logger log;
 
-  @Config("path")
-  @Inject
-  private String path;
-
   @Override
   public void process(Exchange exchange) throws Exception
   {
@@ -46,6 +41,9 @@ public class IncludeProcessor implements Processor
     while (matcher.find())
     {
       String filename = matcher.group(1);
+
+      String path = exchange.getIn().getHeader("path").toString();
+      
       String content = FileUtils.readFileToString(
           Paths.get(path, filename).toFile(), StandardCharsets.UTF_8);
       message = matcher.replaceFirst(Matcher.quoteReplacement(content));
