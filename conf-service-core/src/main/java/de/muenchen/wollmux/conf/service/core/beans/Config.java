@@ -13,4 +13,5 @@ import javax.inject.Qualifier;
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.TYPE})
 public @interface Config {
 	@Nonbinding String value() default "";
+	@Nonbinding String defaultValue() default "";
 }

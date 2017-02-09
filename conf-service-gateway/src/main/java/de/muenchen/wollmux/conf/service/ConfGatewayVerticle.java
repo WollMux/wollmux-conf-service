@@ -28,10 +28,8 @@ import io.vertx.ext.web.handler.BodyHandler;
 @Dependent
 public class ConfGatewayVerticle extends AbstractVerticle
 {
-  private static final int PORT = 8080;
-
   static final String BASE_PATH = "/api/v1";
-
+  
   @Inject
   private Logger log;
 
@@ -45,6 +43,20 @@ public class ConfGatewayVerticle extends AbstractVerticle
   public void stop() throws Exception
   {
     log.info("ConfGatewayVerticle stopping.");
+  }
+  
+  public static int getPort() 
+  {
+    String value = System.getenv("ENV_CONFSERVICE_PORT");
+    if (value == null) 
+    {
+      value = System.getProperty("ENV_CONFSERVICE_PORT");
+    }
+    if (value == null)
+    {
+      value = "8080";
+    }
+    return Integer.parseInt(value);
   }
 
   public static void main(String[] args)
@@ -76,7 +88,7 @@ public class ConfGatewayVerticle extends AbstractVerticle
             weldVerticle.registerRoutes(router);
             vertx.deployVerticle(weldVerticle.container().select(ConfGatewayVerticle.class).get());
             HttpServer server = vertx.createHttpServer();
-            server.requestHandler(router::accept).listen(PORT, res2 ->
+            server.requestHandler(router::accept).listen(getPort(), res2 ->
             {
               if (res2.succeeded())
               {

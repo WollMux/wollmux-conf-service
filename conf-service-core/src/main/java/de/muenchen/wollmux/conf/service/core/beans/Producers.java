@@ -23,16 +23,21 @@ public class Producers
   @Produces
   String getConfigString(InjectionPoint ip)
   {
-    String name = ip.getAnnotated().getAnnotation(Config.class).value();
+    Config annot = ip.getAnnotated().getAnnotation(Config.class);
+    String name = annot.value();
     if (!name.isEmpty())
     {
       String value = System.getenv("ENV_CONFSERVICE_" + name.toUpperCase());
       if (value == null) {
-	value = System.getProperty("ENV_CONFSERVICE_" + name.toUpperCase());
+        value = System.getProperty("ENV_CONFSERVICE_" + name.toUpperCase());
       }
       return value;
     } else
     {
+      if (!annot.defaultValue().isEmpty())
+      {
+        return annot.defaultValue();
+      }
       return null;
     }
   }
