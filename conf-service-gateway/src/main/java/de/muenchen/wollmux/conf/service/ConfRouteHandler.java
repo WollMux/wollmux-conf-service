@@ -55,6 +55,11 @@ public class ConfRouteHandler implements Handler<RoutingContext>
     String path = StringUtils.remove(r.request().path(),
         ConfGatewayVerticle.BASE_PATH);
     String product = r.request().getParam("product");
+    
+    if (product == null || product.isEmpty())
+    {
+      product = "wollmux";
+    }
 
     String[] parts = StringUtils.strip(path, "/").split("/");
 
