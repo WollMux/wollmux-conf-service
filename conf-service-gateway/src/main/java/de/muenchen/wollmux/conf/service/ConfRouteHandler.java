@@ -78,8 +78,18 @@ public class ConfRouteHandler implements Handler<RoutingContext>
           if (res2.succeeded())
           {
             r.response().setChunked(true);
-            r.response().putHeader("Content-Type", "text/plain; charset=utf-8");
-            stream(res2.result(), r.response());
+            FileObject fo = new FileObject(res2.result());
+            
+            if (fo.getType().equals("conf"))
+            {
+              r.response().putHeader("Content-Type", "text/plain; charset=utf-8");
+              stream(fo.getContent(), r.response());
+            }
+            else
+            {
+              r.response().putHeader("Content-Type", "application/octet-stream");
+              stream(fo.getContentAsBytes(), r.response());
+            }
             r.response().setStatusCode(200);
             r.response().end();
           } else
@@ -113,8 +123,13 @@ public class ConfRouteHandler implements Handler<RoutingContext>
       response.write(content);
       return;
     }
-
-    ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
+    
+    stream(content.getBytes(), response);
+  }
+  
+  private void stream(byte[] content, HttpServerResponse response)
+  {
+    ByteArrayInputStream is = new ByteArrayInputStream(content);
     byte[] buf = new byte[chunkSize];
 
     while (is.available() > 0)
@@ -125,5 +140,6 @@ public class ConfRouteHandler implements Handler<RoutingContext>
         response.write(Buffer.buffer(Arrays.copyOf(buf, size)));
       }
     }
+    
   }
 }

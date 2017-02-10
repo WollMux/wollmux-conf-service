@@ -23,7 +23,7 @@ public interface ConfService
   /**
    * Liefert einen String im WollMux-Conf-Format.
    */
-  public void getFile(String file, Handler<AsyncResult<String>> resultHandler);
+  public void getFile(String file, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Liefert einen String im JSON-Format.

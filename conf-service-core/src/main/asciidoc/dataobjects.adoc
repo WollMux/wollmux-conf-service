@@ -1,0 +1,14 @@
+= Cheatsheets
+
+[[FileObject]]
+== FileObject
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[content]]`content`|`String`|-
+|[[type]]`type`|`String`|-
+|===
+

@@ -18,6 +18,9 @@ public class ConfRouteBuilder extends RouteBuilder
   @Inject 
   private FileReadProcessor fileReadProcessor; 
 
+  @Inject 
+  private FileReadBinaryProcessor fileReadBinaryProcessor; 
+
   @Override
   public void configure() throws Exception
   {
@@ -31,6 +34,8 @@ public class ConfRouteBuilder extends RouteBuilder
     from("direct:readConfFile").process(fileReadProcessor)
       .to(ROUTE_GETCONF);
     
+    from("direct:readBinaryFile").process(fileReadBinaryProcessor);
+
     from(ROUTE_GETCONF).id("getConf")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_GET))
       .setHeader(CacheConstants.CACHE_KEY, body())

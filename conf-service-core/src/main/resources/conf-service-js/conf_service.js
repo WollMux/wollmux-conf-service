@@ -44,7 +44,7 @@ var ConfService = function(j_val) {
     if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
       j_confService["getFile(java.lang.String,io.vertx.core.Handler)"](file, function(ar) {
       if (ar.succeeded()) {
-        resultHandler(ar.result(), null);
+        resultHandler(utils.convReturnJson(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }

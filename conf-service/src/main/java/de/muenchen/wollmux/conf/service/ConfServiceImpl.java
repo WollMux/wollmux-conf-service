@@ -41,7 +41,7 @@ public class ConfServiceImpl implements ConfService
    */
   @Override
   public void getFile(String file,
-      Handler<AsyncResult<String>> resultHandler)
+      Handler<AsyncResult<JsonObject>> resultHandler)
   {
     try
     {
@@ -59,7 +59,23 @@ public class ConfServiceImpl implements ConfService
       {
         String config = producerTemplate
             .requestBodyAndHeader("direct:readConfFile", "", "url", path, String.class);
-        resultHandler.handle(Future.succeededFuture(config));
+        
+        FileObject result = new FileObject(config, "conf");
+        
+        resultHandler.handle(Future.succeededFuture(result.toJson()));
+      }
+      if (ext.equals("json"))
+      {
+      }
+      else
+      {
+        byte[] config = producerTemplate
+            .requestBodyAndHeader("direct:readBinaryFile", "", "url", path, byte[].class);
+        
+        FileObject result = new FileObject(config, ext);
+        
+        resultHandler.handle(Future.succeededFuture(result.toJson()));
+        
       }
       resultHandler.handle(Future.succeededFuture());
     } catch (Exception e)
