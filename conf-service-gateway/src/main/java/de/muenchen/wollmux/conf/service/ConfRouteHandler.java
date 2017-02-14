@@ -94,11 +94,11 @@ public class ConfRouteHandler implements Handler<RoutingContext>
             r.response().end();
           } else
           {
-            log.error("Calling getConf failed.", res2.cause());
+            log.error("Calling getFile failed.", res2.cause());
 
             confServices.validateProxy(serviceName);
 
-            r.fail(500);
+            r.fail(404);
           }
         });
       } else

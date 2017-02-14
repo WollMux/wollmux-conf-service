@@ -60,24 +60,29 @@ public class ConfServiceImpl implements ConfService
         String config = producerTemplate
             .requestBodyAndHeader("direct:readConfFile", "", "url", path, String.class);
         
-        FileObject result = new FileObject(config, "conf");
-        
-        resultHandler.handle(Future.succeededFuture(result.toJson()));
+        if (config.length() > 0)
+        {
+          FileObject result = new FileObject(config, "conf");
+          resultHandler.handle(Future.succeededFuture(result.toJson()));
+        }
       }
       if (ext.equals("json"))
       {
       }
       else
       {
-        byte[] config = producerTemplate
+        byte[] contents = producerTemplate
             .requestBodyAndHeader("direct:readBinaryFile", "", "url", path, byte[].class);
+
         
-        FileObject result = new FileObject(config, ext);
-        
-        resultHandler.handle(Future.succeededFuture(result.toJson()));
+        if (contents.length > 0)
+        {
+          FileObject result = new FileObject(contents, ext);
+          resultHandler.handle(Future.succeededFuture(result.toJson()));
+        }
         
       }
-      resultHandler.handle(Future.succeededFuture());
+      resultHandler.handle(Future.failedFuture("File couldn't be read."));
     } catch (Exception e)
     {
       resultHandler.handle(Future.failedFuture(e));
