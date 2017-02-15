@@ -55,12 +55,6 @@ public class ConfRouteHandler implements Handler<RoutingContext>
     r.response().setChunked(true);
     String path = StringUtils.remove(r.request().path(),
         ConfGatewayVerticle.BASE_PATH);
-    String product = r.request().getParam("product");
-    
-    if (product == null || product.isEmpty())
-    {
-      product = "wollmux";
-    }
 
     LinkedList<String> parts = new LinkedList<>(Arrays.asList(StringUtils.strip(path, "/").split("/")));
 
@@ -79,7 +73,7 @@ public class ConfRouteHandler implements Handler<RoutingContext>
           {
             r.response().setChunked(true);
             FileObject fo = new FileObject(res2.result());
-            
+
             if (fo.getType().equals("conf"))
             {
               r.response().putHeader("Content-Type", "text/plain; charset=utf-8");
@@ -123,10 +117,10 @@ public class ConfRouteHandler implements Handler<RoutingContext>
       response.write(content);
       return;
     }
-    
+
     stream(content.getBytes(), response);
   }
-  
+
   private void stream(byte[] content, HttpServerResponse response)
   {
     ByteArrayInputStream is = new ByteArrayInputStream(content);
@@ -140,6 +134,6 @@ public class ConfRouteHandler implements Handler<RoutingContext>
         response.write(Buffer.buffer(Arrays.copyOf(buf, size)));
       }
     }
-    
+
   }
 }

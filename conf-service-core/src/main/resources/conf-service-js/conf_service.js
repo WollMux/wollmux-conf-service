@@ -24,7 +24,7 @@ var JConfService = de.muenchen.wollmux.conf.service.ConfService;
 /**
  Interface des Konfigurationsservice. Wird in conf-service implementiert
  und als Service registriert.
- 
+
  @class
 */
 var ConfService = function(j_val) {
@@ -33,7 +33,7 @@ var ConfService = function(j_val) {
   var that = this;
 
   /**
-   Liefert einen String im WollMux-Conf-Format.
+   Liefert eine Datei der Konfiguration.
 
    @public
    @param file {string} 
@@ -43,26 +43,6 @@ var ConfService = function(j_val) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
       j_confService["getFile(java.lang.String,io.vertx.core.Handler)"](file, function(ar) {
-      if (ar.succeeded()) {
-        resultHandler(utils.convReturnJson(ar.result()), null);
-      } else {
-        resultHandler(null, ar.cause());
-      }
-    });
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Liefert einen String im JSON-Format.
-
-   @public
-   @param file {string} 
-   @param resultHandler {function} 
-   */
-  this.getJSON = function(file, resultHandler) {
-    var __args = arguments;
-    if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
-      j_confService["getJSON(java.lang.String,io.vertx.core.Handler)"](file, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {
