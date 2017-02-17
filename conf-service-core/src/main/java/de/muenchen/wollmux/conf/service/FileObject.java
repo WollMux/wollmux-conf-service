@@ -29,7 +29,7 @@ public class FileObject
     this.type = type;
     setContent(content);
   }
-
+  
   public JsonObject toJson() 
   {
     JsonObject ret = new JsonObject();

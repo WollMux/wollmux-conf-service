@@ -27,6 +27,7 @@ public class FileReadProcessor implements Processor
       String content = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
       exchange.getOut().setBody(content);
       exchange.getOut().setHeader("path", FilenameUtils.getFullPath(f.getAbsolutePath()));
+      exchange.getOut().setHeader("url", url);
     }
   }
 

@@ -81,7 +81,14 @@ public class ConfRouteHandler implements Handler<RoutingContext>
             }
             else
             {
-              r.response().putHeader("Content-Type", "application/octet-stream");
+              if (fo.getType().equals("class"))
+              {
+                r.response().putHeader("Content-Type", "application/java");
+              }
+              else
+              {
+                r.response().putHeader("Content-Type", "application/octet-stream");
+              }
               stream(fo.getContentAsBytes(), r.response());
             }
             r.response().setStatusCode(200);
@@ -123,6 +130,8 @@ public class ConfRouteHandler implements Handler<RoutingContext>
 
   private void stream(byte[] content, HttpServerResponse response)
   {
+    response.putHeader("Content-Length", String.valueOf(content.length));
+
     ByteArrayInputStream is = new ByteArrayInputStream(content);
     byte[] buf = new byte[chunkSize];
 

@@ -26,6 +26,7 @@ public class FileReadBinaryProcessor implements Processor
       byte[] content = FileUtils.readFileToByteArray(f);
       exchange.getOut().setBody(content);
       exchange.getOut().setHeader("path", FilenameUtils.getFullPath(f.getAbsolutePath()));
+      exchange.getOut().setHeader("url", url);
     }
   }
 

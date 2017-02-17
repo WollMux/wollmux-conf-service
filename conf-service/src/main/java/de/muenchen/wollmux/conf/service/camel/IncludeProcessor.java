@@ -50,6 +50,7 @@ public class IncludeProcessor implements Processor
       matcher.reset(message);
     }
     exchange.getOut().setBody(message);
+    exchange.getOut().setHeader("url", exchange.getIn().getHeader("url"));
   }
 
 }

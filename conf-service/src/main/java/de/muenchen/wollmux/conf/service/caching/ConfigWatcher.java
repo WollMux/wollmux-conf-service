@@ -49,9 +49,13 @@ public class ConfigWatcher
   {
     try
     {
-      Paths.get(URI.create(path)).register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
-          StandardWatchEventKinds.ENTRY_DELETE,
-          StandardWatchEventKinds.ENTRY_MODIFY);
+      URI uri = URI.create(path);
+      if (uri.getScheme().equals("file"))
+      {
+        Paths.get(uri).register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
+            StandardWatchEventKinds.ENTRY_DELETE,
+            StandardWatchEventKinds.ENTRY_MODIFY);
+      }
     } catch (IOException ex)
     {
       log.error("Watcher wurde nicht registriert.", ex);
