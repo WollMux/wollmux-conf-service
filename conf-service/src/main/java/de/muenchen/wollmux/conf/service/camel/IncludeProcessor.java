@@ -1,7 +1,9 @@
 package de.muenchen.wollmux.conf.service.camel;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
+import java.net.URI;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,9 +12,7 @@ import javax.inject.Inject;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.commons.io.FileUtils;
-
-import io.vertx.core.logging.Logger;
+import org.apache.camel.ProducerTemplate;
 
 /**
  * Verarbeitet alle include-Anweisungen in einer Message und ersetzt sie durch
@@ -29,7 +29,7 @@ import io.vertx.core.logging.Logger;
 public class IncludeProcessor implements Processor
 {
   @Inject
-  Logger log;
+  private ProducerTemplate producerTemplate;
 
   @Override
   public void process(Exchange exchange) throws Exception
@@ -40,15 +40,25 @@ public class IncludeProcessor implements Processor
     Matcher matcher = pattern.matcher(message);
     while (matcher.find())
     {
-      String filename = matcher.group(1);
+      // URL bauen und encoden
+      String file = matcher.group(1);
+      URL base = URI.create(exchange.getIn().getHeader("url", String.class))
+          .toURL();
+      URL url = new URL(base, file);
+      url = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(),
+          url.getPort(), url.getPath(), url.getQuery(), url.getRef()).toURL();
+      String protocol = url.getProtocol();
 
-      String path = exchange.getIn().getHeader("path").toString();
+      Map<String, Object> headers = new HashMap<>();
+      headers.put("url", url.toString());
+      headers.put("protocol", protocol);
+      String contents = producerTemplate.requestBodyAndHeaders(
+          ConfRouteBuilder.ROUTE_GET_FILE, null, headers, String.class);
 
-      String content = FileUtils.readFileToString(
-          Paths.get(path, filename).toFile(), StandardCharsets.UTF_8);
-      message = matcher.replaceFirst(Matcher.quoteReplacement(content));
+      message = matcher.replaceFirst(Matcher.quoteReplacement(contents));
       matcher.reset(message);
     }
+
     exchange.getOut().setBody(message);
     exchange.getOut().setHeader("url", exchange.getIn().getHeader("url"));
   }

@@ -13,26 +13,25 @@ public class ConfRouteBuilder extends RouteBuilder
   public static final String ROUTE_GET_FILE = "direct:getFile";
   private static final String ROUTE_CACHE = "direct:cache";
   private static final String ROUTE_INVALIDATE_CACHE = "direct:invalidateCache";
-  
+
   @Inject
   private IncludeProcessor includeProcessor;
-  
-  @Inject 
-  private FileReadProcessor fileReadProcessor; 
 
-  @Inject 
+  @Inject
+  private FileReadProcessor fileReadProcessor;
+
+  @Inject
   private FileReadBinaryProcessor fileReadBinaryProcessor;
 
   @Inject @Named("httpReadProcessor")
   private HttpReadProcessor httpReadProcessor;
-  
+
   @Inject @Named("httpReadBinaryProcessor")
-  private HttpReadBinaryProcessor httpReadBinaryProcessor; 
+  private HttpReadBinaryProcessor httpReadBinaryProcessor;
 
   @Override
   public void configure() throws Exception
   {
-    getContext().setTracing(true);
     from(ROUTE_GET_FILE).id("getFile")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_GET))
       .setHeader(CacheConstants.CACHE_KEY, header("url"))
@@ -44,30 +43,30 @@ public class ConfRouteBuilder extends RouteBuilder
           .to("direct:readHttp")
         .end()
       .end();
-    
+
     from("direct:readLocal").id("readLocal")
       .choice().when(header("url").endsWith("conf"))
         .to("direct:readConfFile")
       .otherwise()
         .to("direct:readBinaryFile")
       .end();
-    
+
     from("direct:readHttp").id("readHttp")
      .choice().when(header("url").endsWith("conf"))
       .to("direct:readConfHttp")
     .otherwise()
       .to("direct:readBinaryHttp")
     .end();
-    
+
     from("direct:readConfFile")
       .process(fileReadProcessor)
       .process(includeProcessor)
       .to(ROUTE_CACHE);
-    
+
     from("direct:readBinaryFile")
       .process(fileReadBinaryProcessor)
       .to(ROUTE_CACHE);
-    
+
     from("direct:readConfHttp").id("readConfHttp")
       .process(httpReadProcessor)
       .process(includeProcessor)
@@ -81,7 +80,7 @@ public class ConfRouteBuilder extends RouteBuilder
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_ADD))
       .setHeader(CacheConstants.CACHE_KEY, header("url"))
       .to("cache://ConfCache");
-    
+
     from(ROUTE_INVALIDATE_CACHE).id("invalidateCache")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_DELETEALL))
       .to("cache://ConfCache");
