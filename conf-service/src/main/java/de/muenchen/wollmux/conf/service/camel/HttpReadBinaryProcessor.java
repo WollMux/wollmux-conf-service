@@ -8,15 +8,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import io.vertx.core.logging.Logger;
+
 @Named
 @ApplicationScoped
 public class HttpReadBinaryProcessor implements Processor
 {
+  @Inject
+  Logger log;
 
   @Override
   public void process(Exchange exchange) throws Exception
@@ -53,6 +58,7 @@ public class HttpReadBinaryProcessor implements Processor
     } 
     else
     {
+      log.error(conn.getResponseMessage());
       return null;
     }
 

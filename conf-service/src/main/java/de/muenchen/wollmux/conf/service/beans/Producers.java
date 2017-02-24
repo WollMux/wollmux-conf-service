@@ -11,6 +11,7 @@ import javax.inject.Inject;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.main.Main;
 
 import de.muenchen.wollmux.conf.service.camel.ConfRouteBuilder;
@@ -32,12 +33,11 @@ public class Producers
 
   @Produces
   @ApplicationScoped
-  public Main getCamel(ConfRouteBuilder routeBuilder) throws Exception
+  public Main getCamel() throws Exception
   {
     try
     {
       Main main = new Main();
-      main.addRouteBuilder(routeBuilder);
       main.start();
       return main;
     } catch (Exception e)
@@ -48,9 +48,13 @@ public class Producers
   }
 
   @Produces
-  public CamelContext getContext(Main main)
+  @ApplicationScoped
+  public CamelContext getContext(ConfRouteBuilder routeBuilder) throws Exception
   {
-    return main.getCamelContexts().stream().findFirst().get();
+    CamelContext ctx = new DefaultCamelContext();
+    ctx.addRoutes(routeBuilder);
+    ctx.start();
+    return ctx;
   }
   
   @Produces 

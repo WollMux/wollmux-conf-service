@@ -72,6 +72,8 @@ public class ConfRouteHandler implements Handler<RoutingContext>
           if (res2.succeeded())
           {
             r.response().setChunked(true);
+            r.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            
             FileObject fo = new FileObject(res2.result());
 
             if (fo.getType().equals("conf"))

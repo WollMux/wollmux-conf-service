@@ -45,6 +45,7 @@ public class IncludeProcessor implements Processor
       URL base = URI.create(exchange.getIn().getHeader("url", String.class))
           .toURL();
       URL url = new URL(base, file);
+      
       url = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(),
           url.getPort(), url.getPath(), url.getQuery(), url.getRef()).toURL();
       String protocol = url.getProtocol();

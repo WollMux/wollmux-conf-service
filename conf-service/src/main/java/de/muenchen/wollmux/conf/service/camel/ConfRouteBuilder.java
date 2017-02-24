@@ -32,6 +32,8 @@ public class ConfRouteBuilder extends RouteBuilder
   @Override
   public void configure() throws Exception
   {
+    getContext().setTracing(false);
+    
     from(ROUTE_GET_FILE).id("getFile")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_GET))
       .setHeader(CacheConstants.CACHE_KEY, header("url"))

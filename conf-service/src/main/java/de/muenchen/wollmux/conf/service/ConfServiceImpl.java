@@ -83,35 +83,6 @@ public class ConfServiceImpl implements ConfService
         return;
       }
 
-//      if (ext.equals("conf"))
-//      {
-//        String config = producerTemplate
-//            .requestBodyAndHeader("direct:readConfFile", "", "url", path, String.class);
-//
-//        if (config.length() > 0)
-//        {
-//          FileObject result = new FileObject(config, "conf");
-//          resultHandler.handle(Future.succeededFuture(result.toJson()));
-//          return;
-//        }
-//      }
-//      if (ext.equals("json"))
-//      {
-//      }
-//      else
-//      {
-//        byte[] contents = producerTemplate
-//            .requestBodyAndHeader("direct:readBinaryFile", "", "url", path, byte[].class);
-//
-//
-//        if (contents.length > 0)
-//        {
-//          FileObject result = new FileObject(contents, ext);
-//          resultHandler.handle(Future.succeededFuture(result.toJson()));
-//          return;
-//        }
-//
-//      }
       resultHandler.handle(Future.failedFuture("File couldn't be read."));
     } 
     catch (Exception e)
