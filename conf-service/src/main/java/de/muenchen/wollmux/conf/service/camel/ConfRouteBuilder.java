@@ -4,6 +4,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cache.CacheConstants;
 
@@ -11,6 +12,13 @@ import org.apache.camel.component.cache.CacheConstants;
 public class ConfRouteBuilder extends RouteBuilder
 {
   public static final String ROUTE_GET_FILE = "direct:getFile";
+  private static final String ROUTE_READ_BINARY_HTTP = "direct:readBinaryHttp";
+  private static final String ROUTE_READ_CONF_HTTP = "direct:readConfHttp";
+  private static final String ROUTE_READ_BINARY_FILE = "direct:readBinaryFile";
+  private static final String ROUTE_READ_CONF_FILE = "direct:readConfFile";
+  private static final String ROUTE_READ_HTTP = "direct:readHttp";
+  private static final String ROUTE_READ_LOCAL = "direct:readLocal";
+  private static final String ROUTE_CONF_CACHE = "cache://ConfCache";
   private static final String ROUTE_CACHE = "direct:cache";
   private static final String ROUTE_INVALIDATE_CACHE = "direct:invalidateCache";
 
@@ -37,56 +45,57 @@ public class ConfRouteBuilder extends RouteBuilder
     from(ROUTE_GET_FILE).id("getFile")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_GET))
       .setHeader(CacheConstants.CACHE_KEY, header("url"))
-      .to("cache://ConfCache")
+      .to(ROUTE_CONF_CACHE)
       .choice().when(header(CacheConstants.CACHE_ELEMENT_WAS_FOUND).isNull())
         .choice().when(header("protocol").isEqualToIgnoreCase("file"))
-          .to("direct:readLocal")
+          .to(ROUTE_READ_LOCAL)
         .otherwise()
-          .to("direct:readHttp")
+          .to(ROUTE_READ_HTTP)
         .end()
       .end();
 
-    from("direct:readLocal").id("readLocal")
+    from(ROUTE_READ_LOCAL).id("readLocal")
       .choice().when(header("url").endsWith("conf"))
-        .to("direct:readConfFile")
+        .to(ROUTE_READ_CONF_FILE)
       .otherwise()
-        .to("direct:readBinaryFile")
+        .to(ROUTE_READ_BINARY_FILE)
       .end();
 
-    from("direct:readHttp").id("readHttp")
+    from(ROUTE_READ_HTTP).id("readHttp")
      .choice().when(header("url").endsWith("conf"))
-      .to("direct:readConfHttp")
+      .to(ROUTE_READ_CONF_HTTP)
     .otherwise()
-      .to("direct:readBinaryHttp")
+      .to(ROUTE_READ_BINARY_HTTP)
     .end();
 
-    from("direct:readConfFile")
+    from(ROUTE_READ_CONF_FILE).id("readConfFile")
       .process(fileReadProcessor)
       .process(includeProcessor)
       .to(ROUTE_CACHE);
 
-    from("direct:readBinaryFile")
+    from(ROUTE_READ_BINARY_FILE).id("readBinaryFile")
       .process(fileReadBinaryProcessor)
       .to(ROUTE_CACHE);
 
-    from("direct:readConfHttp").id("readConfHttp")
+    from(ROUTE_READ_CONF_HTTP).id("readConfHttp")
       .process(httpReadProcessor)
       .process(includeProcessor)
       .to(ROUTE_CACHE);
 
-    from("direct:readBinaryHttp").id("readBinaryHttp")
+    from(ROUTE_READ_BINARY_HTTP).id("readBinaryHttp")
       .process(httpReadBinaryProcessor)
       .to(ROUTE_CACHE);
 
     from(ROUTE_CACHE).id("cache")
       .choice().when().simple("${body} != null")
+        .log(LoggingLevel.DEBUG, "Caching ${header.url}")
         .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_ADD))
         .setHeader(CacheConstants.CACHE_KEY, header("url"))
-        .to("cache://ConfCache")
+        .to(ROUTE_CONF_CACHE)
       .end();
 
     from(ROUTE_INVALIDATE_CACHE).id("invalidateCache")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_DELETEALL))
-      .to("cache://ConfCache");
+      .to(ROUTE_CONF_CACHE);
   }
 }

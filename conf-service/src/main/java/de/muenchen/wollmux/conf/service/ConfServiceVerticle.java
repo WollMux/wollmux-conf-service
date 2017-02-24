@@ -1,11 +1,21 @@
 package de.muenchen.wollmux.conf.service;
 
+import java.lang.management.ManagementFactory;
+
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 
 import org.apache.camel.main.Main;
 import org.jboss.weld.vertx.web.WeldWebVerticle;
 
+import de.muenchen.wollmux.conf.service.beans.ConfServiceMXBean;
 import de.muenchen.wollmux.conf.service.caching.ConfigWatcher;
 import de.muenchen.wollmux.conf.service.core.beans.Config;
 import io.vertx.core.AbstractVerticle;
@@ -41,7 +51,7 @@ public class ConfServiceVerticle extends AbstractVerticle
   private MessageConsumer<String> pingConsumer;
 
   @Inject
-  Logger log;
+  private Logger log;
 
   @Config("unit")
   @Inject
@@ -55,6 +65,23 @@ public class ConfServiceVerticle extends AbstractVerticle
 
   @Inject
   private ConfigWatcher watcher;
+  
+  @Inject
+  private ConfServiceMXBean confServiceMBean;
+  
+  @PostConstruct
+  public void init()
+  {
+      try
+      {
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        ObjectName name = new ObjectName("de.muenchen.wollmux.conf.service:name=ConfService");
+        mbs.registerMBean(confServiceMBean, name);
+      } catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException | MalformedObjectNameException e)
+      {
+        log.error("Error registering MBean.", e);
+      }
+  }
 
   @Override
   public void start(Future<Void> startFuture) throws Exception
