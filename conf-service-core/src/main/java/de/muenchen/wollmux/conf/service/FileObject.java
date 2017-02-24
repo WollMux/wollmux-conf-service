@@ -57,12 +57,19 @@ public class FileObject
   @GenIgnore
   public byte[] getContentAsBytes()
   {
+    if (content == null)
+    {
+      return null;
+    }
     return Base64.getDecoder().decode(content);
   }
 
   @GenIgnore
   public void setContent(byte[] content)
   {
-    this.content = Base64.getEncoder().encodeToString(content);
+    if (content != null) 
+    {
+      this.content = Base64.getEncoder().encodeToString(content);
+    }
   }
 }

@@ -77,7 +77,7 @@ public class ConfServiceImpl implements ConfService
         result = new FileObject((byte[]) contents, ext);
       }
       
-      if (result.getContent().length() > 0)
+      if (result.getContent() != null && result.getContent().length() > 0)
       {
         resultHandler.handle(Future.succeededFuture(result.toJson()));
         return;

@@ -79,9 +79,11 @@ public class ConfRouteBuilder extends RouteBuilder
       .to(ROUTE_CACHE);
 
     from(ROUTE_CACHE).id("cache")
-      .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_ADD))
-      .setHeader(CacheConstants.CACHE_KEY, header("url"))
-      .to("cache://ConfCache");
+      .choice().when().simple("${body} != null")
+        .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_ADD))
+        .setHeader(CacheConstants.CACHE_KEY, header("url"))
+        .to("cache://ConfCache")
+      .end();
 
     from(ROUTE_INVALIDATE_CACHE).id("invalidateCache")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_DELETEALL))
