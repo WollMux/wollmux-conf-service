@@ -29,7 +29,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 public class ConfGatewayVerticle extends AbstractVerticle
 {
   static final String BASE_PATH = "/api/v1";
-  
+
   @Inject
   private Logger log;
 
@@ -44,11 +44,11 @@ public class ConfGatewayVerticle extends AbstractVerticle
   {
     log.info("ConfGatewayVerticle stopping.");
   }
-  
-  public static int getPort() 
+
+  public static int getPort()
   {
     String value = System.getenv("ENV_CONFSERVICE_PORT");
-    if (value == null) 
+    if (value == null)
     {
       value = System.getProperty("ENV_CONFSERVICE_PORT");
     }
@@ -59,13 +59,30 @@ public class ConfGatewayVerticle extends AbstractVerticle
     return Integer.parseInt(value);
   }
 
+  public static String getIP()
+  {
+    String value = System.getenv("ENV_CONFSERVICE_IP");
+    if (value == null)
+    {
+      value = System.getProperty("ENV_CONFSERVICE_IP");
+    }
+    if (value == null)
+    {
+      value = VertxOptions.DEFAULT_CLUSTER_HOST;
+    }
+    return value;
+  }
+
   public static void main(String[] args)
   {
     System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.SLF4JLogDelegateFactory");
     System.setProperty("hazelcast.logging.type", "slf4j");
-    
+
     Logger log = LoggerFactory.getLogger(ConfGatewayVerticle.class);
-    Vertx.clusteredVertx(new VertxOptions(), res ->
+    VertxOptions options = new VertxOptions();
+    options.setClustered(true);
+    options.setClusterHost(getIP());
+    Vertx.clusteredVertx(options, res ->
     {
       if (res.succeeded())
       {

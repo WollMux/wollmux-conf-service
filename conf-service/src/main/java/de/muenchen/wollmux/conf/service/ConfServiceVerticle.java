@@ -65,10 +65,10 @@ public class ConfServiceVerticle extends AbstractVerticle
 
   @Inject
   private ConfigWatcher watcher;
-  
+
   @Inject
   private ConfServiceMXBean confServiceMBean;
-  
+
   @PostConstruct
   public void init()
   {
@@ -125,6 +125,20 @@ public class ConfServiceVerticle extends AbstractVerticle
     camelMain.stop();
   }
 
+  public static String getIP()
+  {
+    String value = System.getenv("ENV_CONFSERVICE_IP");
+    if (value == null)
+    {
+      value = System.getProperty("ENV_CONFSERVICE_IP");
+    }
+    if (value == null)
+    {
+      value = VertxOptions.DEFAULT_CLUSTER_HOST;
+    }
+    return value;
+  }
+
   public static void main(String[] args)
   {
     System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.SLF4JLogDelegateFactory");
@@ -132,7 +146,10 @@ public class ConfServiceVerticle extends AbstractVerticle
 
     Logger log = LoggerFactory.getLogger(ConfServiceVerticle.class);
 
-    Vertx.clusteredVertx(new VertxOptions(), res ->
+    VertxOptions options = new VertxOptions();
+    options.setClustered(true);
+    options.setClusterHost(getIP());
+    Vertx.clusteredVertx(options, res ->
     {
       if (res.succeeded())
       {
