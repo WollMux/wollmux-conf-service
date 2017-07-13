@@ -15,11 +15,11 @@ import io.vertx.core.json.JsonObject;
  */
 @ProxyGen
 @VertxGen
-public interface ConfService
+public interface AdminService
 {
-  public static final String CONF_SERVICE = "CONF";
-  public static final String CONF_SERVICE_ADDRESS = "conf.service.";
-  public static final String CONF_SERVICE_BASE_NAME = "conf-service-";
+  public static final String ADMIN_SERVICE = "ADMIN";
+  public static final String ADMIN_SERVICE_ADDRESS = "admin.service.";
+  public static final String ADMIN_SERVICE_BASE_NAME = "admin-service-";
 
   /**
    * Liefert eine Datei der Konfiguration.

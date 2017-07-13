@@ -36,7 +36,10 @@ public class ConfRouteHandler implements Handler<RoutingContext>
   private Logger log;
 
   @Inject
-  private ServiceCache confServices;
+  private ConfServiceCache confServices;
+
+  @Inject
+  private AdminServiceCache adminServices;
 
   private int chunkSize;
 
@@ -47,71 +50,98 @@ public class ConfRouteHandler implements Handler<RoutingContext>
   }
 
   @Override
-  public void handle(RoutingContext r)
+  public void handle(RoutingContext context)
   {
-    log.info("Request from " + r.request().remoteAddress() + ": " + r.request()
-    	.rawMethod() + " " + r.request().uri());
+    log.info("Request from " + context.request().remoteAddress() + ": " + context.request()
+    	.rawMethod() + " " + context.request().uri());
 
-    r.response().setChunked(true);
-    String path = StringUtils.remove(r.request().path(),
+    context.response().setChunked(true);
+    String path = StringUtils.remove(context.request().path(),
         ConfGatewayVerticle.BASE_PATH);
 
     LinkedList<String> parts = new LinkedList<>(Arrays.asList(StringUtils.strip(path, "/").split("/")));
 
-    if (parts.size() > 1)
+    if (parts.size() > 2)
     {
+      String service = parts.pop();
       String referat = parts.pop();
       String file = String.join("/", parts);
 
-      String serviceName = ConfService.CONF_SERVICE_BASE_NAME + referat;
-      ConfService cs = confServices.getService(serviceName);
-      if (cs != null)
+      if(ConfService.CONF_SERVICE.equalsIgnoreCase(service))
       {
-        cs.getFile(file, res2 ->
-        {
-          if (res2.succeeded())
-          {
-            r.response().setChunked(true);
-            r.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-
-            FileObject fo = new FileObject(res2.result());
-            String contentType = "Content-Type";
-
-            if (fo.getType().equals("conf"))
-            {
-              r.response().putHeader(contentType, "text/plain; charset=utf-8");
-              stream(fo.getContent(), r.response());
-            }
-            else
-            {
-              if (fo.getType().equals("class"))
-              {
-                r.response().putHeader(contentType, "application/java");
-              }
-              else
-              {
-                r.response().putHeader(contentType, "application/octet-stream");
-              }
-              stream(fo.getContentAsBytes(), r.response());
-            }
-            r.response().setStatusCode(200);
-            r.response().end();
-          } else
-          {
-            log.error("Calling getFile failed.", res2.cause());
-
-            confServices.validateProxy(serviceName);
-
-            r.fail(404);
-          }
-        });
-      } else
+        String serviceName = ConfService.CONF_SERVICE_BASE_NAME + referat;
+        handleConf(context, serviceName, file);
+      } else if (AdminService.ADMIN_SERVICE.equalsIgnoreCase(service))
       {
-        r.fail(502);
+        String serviceName = AdminService.ADMIN_SERVICE_BASE_NAME + referat;
+        handleAdmin(context, serviceName, file);
+      } else {
+        context.fail(400);
       }
     } else
     {
-      r.fail(400);
+      context.fail(400);
+    }
+  }
+
+  private void handleAdmin(RoutingContext context, String serviceName, String file)
+  {
+    AdminService as = adminServices.getService(serviceName);
+    if (as != null)
+    {
+      context.response().end("OK");
+    } else
+    {
+      context.fail(502);
+    }
+  }
+
+  private void handleConf(RoutingContext context, String serviceName, String file)
+  {
+    ConfService cs = confServices.getService(serviceName);
+    if (cs != null)
+    {
+      cs.getFile(file, res2 ->
+      {
+        if (res2.succeeded())
+        {
+          context.response().setChunked(true);
+          context.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+
+          FileObject fo = new FileObject(res2.result());
+          String contentType = "Content-Type";
+
+          if (fo.getType().equals("conf"))
+          {
+            context.response().putHeader(contentType, "text/plain; charset=utf-8");
+            stream(fo.getContent(), context.response());
+          }
+          else
+          {
+            if (fo.getType().equals("class"))
+            {
+              context.response().putHeader(contentType, "application/java");
+            }
+            else
+            {
+              context.response().putHeader(contentType, "application/octet-stream");
+            }
+            stream(fo.getContentAsBytes(), context.response());
+          }
+          context.response().setStatusCode(200);
+          context.response().end();
+        } else
+        {
+          log.error("Calling getFile failed.", res2.cause());
+
+          confServices.validateProxy(serviceName);
+
+          context.fail(404);
+        }
+      });
+    } else
+    {
+      context.fail(502);
     }
   }
 

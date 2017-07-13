@@ -16,17 +16,18 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
+import io.vertx.servicediscovery.Record;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 
 /**
  * Ein Cache für Service-Proxies von registrierten ConfServices.
- * 
+ *
  * @author andor.ertsey
  *
  */
 @ApplicationScoped
-public class ServiceCache
+public abstract class ServiceCache<T>
 {
   @Inject
   private Logger log;
@@ -34,7 +35,7 @@ public class ServiceCache
   @Inject
   private Vertx vertx;
 
-  private ConcurrentHashMap<String, ConfService> serviceCache = new ConcurrentHashMap<>();
+  private ConcurrentHashMap<String, T> serviceCache = new ConcurrentHashMap<>();
 
   @Inject
   private ServiceDiscovery serviceDiscovery;
@@ -48,7 +49,7 @@ public class ServiceCache
   @PreDestroy
   protected void destroy()
   {
-    for (ConfService cs : serviceCache.values())
+    for (T cs : serviceCache.values())
     {
       ServiceDiscovery.releaseServiceObject(serviceDiscovery, cs);
     }
@@ -58,11 +59,11 @@ public class ServiceCache
 
   /**
    * Gibt einen vorher gecachten Service-Proxy zurück.
-   * 
+   *
    * @param name Name des Service zu dem der Proxy gehört.
    * @return ConfService-Proxy oder null
    */
-  public ConfService getService(String name)
+  public T getService(String name)
   {
     if (serviceCache.containsKey(name))
     {
@@ -71,12 +72,12 @@ public class ServiceCache
     return null;
   }
 
+  abstract boolean validateService(Record record);
+  abstract Class<?> getServiceClass();
+
   private void locateServices()
   {
-    serviceDiscovery.getRecord(record ->
-    {
-      return record.getName().startsWith(ConfService.CONF_SERVICE_BASE_NAME);
-    }, res ->
+    serviceDiscovery.getRecord(record -> validateService(record), res ->
     {
       if (res.succeeded() && res.result() != null)
       {
@@ -84,16 +85,16 @@ public class ServiceCache
         if (!serviceCache.containsKey(serviceName))
         {
           log.info("New service found: " + serviceName);
-          EventBusService.getProxy(serviceDiscovery, ConfService.class, res1 ->
+          EventBusService.getProxy(serviceDiscovery, getServiceClass(), res1 ->
           {
             if (res1.succeeded())
             {
-              ConfService confService = res1.result();
-              serviceCache.put(serviceName, confService);
+              T service = (T) res1.result();
+              serviceCache.put(serviceName, service);
             } else
             {
-              log.error("Proxy for service " + serviceName + 
-        	  " could not be created.", res1.cause());
+              log.error("Proxy for service " + serviceName +
+                  " could not be created.", res1.cause());
             }
           });
         }
@@ -104,16 +105,16 @@ public class ServiceCache
   protected void removeService(String name)
   {
     log.debug("Removing service " + name);
-    
+
     if (serviceCache.containsKey(name))
     {
-      ConfService cs = serviceCache.get(name);
+      T cs = serviceCache.get(name);
       ServiceDiscovery.releaseServiceObject(serviceDiscovery, cs);
       serviceCache.remove(name);
     }
   }
 
-  
+
   protected void consumeDiscoveryAnnounce(
       @Observes @VertxConsumer("vertx.discovery.announce") VertxEvent event)
   {
@@ -134,11 +135,11 @@ public class ServiceCache
       removeService(serviceName);
     }
   }
-  
+
   /**
-   * Pingt einen Service. Wenn der Service nicht antwortet, wird er aus der 
+   * Pingt einen Service. Wenn der Service nicht antwortet, wird er aus der
    * Liste der gecachten Services gelöscht.
-   * 
+   *
    * @param name Vollständiger Name des Service.
    */
   public void validateProxy(String name)
@@ -151,10 +152,10 @@ public class ServiceCache
       }
     });
   }
-  
+
   /**
    * Hilfsmethode zum Pingen eines ConfService-Services.
-   * 
+   *
    * @param name
    * @return
    */
@@ -172,7 +173,7 @@ public class ServiceCache
         future.fail("Ping failed.");
       }
     });
-    
+
     return future;
   }
 
