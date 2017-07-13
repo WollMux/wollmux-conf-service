@@ -73,23 +73,24 @@ public class ConfRouteHandler implements Handler<RoutingContext>
           {
             r.response().setChunked(true);
             r.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-            
+
             FileObject fo = new FileObject(res2.result());
+            String contentType = "Content-Type";
 
             if (fo.getType().equals("conf"))
             {
-              r.response().putHeader("Content-Type", "text/plain; charset=utf-8");
+              r.response().putHeader(contentType, "text/plain; charset=utf-8");
               stream(fo.getContent(), r.response());
             }
             else
             {
               if (fo.getType().equals("class"))
               {
-                r.response().putHeader("Content-Type", "application/java");
+                r.response().putHeader(contentType, "application/java");
               }
               else
               {
-                r.response().putHeader("Content-Type", "application/octet-stream");
+                r.response().putHeader(contentType, "application/octet-stream");
               }
               stream(fo.getContentAsBytes(), r.response());
             }

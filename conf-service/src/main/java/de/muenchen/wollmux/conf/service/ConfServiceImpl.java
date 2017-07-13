@@ -55,13 +55,13 @@ public class ConfServiceImpl implements ConfService
       UrlValidator validator = new UrlValidator(new String[]{"http", "https", "file"});
       if (!validator.isValid(path))
       {
-        resultHandler.handle(Future.failedFuture(String.format("Url %1 is invalid.", path)));
+        resultHandler.handle(Future.failedFuture(String.format("Url %s is invalid.", path)));
         return;
       }
-      
+
       URI url = URI.create(path);
       String protocol = url.getScheme();
-      
+
       Map<String, Object> headers = new HashMap<>();
       headers.put("url", path);
       headers.put("protocol", protocol);
@@ -76,7 +76,7 @@ public class ConfServiceImpl implements ConfService
       {
         result = new FileObject((byte[]) contents, ext);
       }
-      
+
       if (result.getContent() != null && result.getContent().length() > 0)
       {
         resultHandler.handle(Future.succeededFuture(result.toJson()));
@@ -84,7 +84,7 @@ public class ConfServiceImpl implements ConfService
       }
 
       resultHandler.handle(Future.failedFuture("File couldn't be read."));
-    } 
+    }
     catch (Exception e)
     {
       resultHandler.handle(Future.failedFuture(e));
