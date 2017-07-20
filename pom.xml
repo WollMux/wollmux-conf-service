@@ -72,6 +72,11 @@
 			<version>${vertx.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-auth-shiro</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.jboss.weld.vertx</groupId>
 			<artifactId>weld-vertx-web</artifactId>
 			<version>1.0.0.CR2</version>

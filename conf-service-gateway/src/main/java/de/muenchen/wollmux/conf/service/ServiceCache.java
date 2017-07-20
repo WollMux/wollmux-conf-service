@@ -77,7 +77,7 @@ public abstract class ServiceCache<T>
 
   private void locateServices()
   {
-    serviceDiscovery.getRecord(record -> validateService(record), res ->
+    serviceDiscovery.getRecord(this::validateService, res ->
     {
       if (res.succeeded() && res.result() != null)
       {

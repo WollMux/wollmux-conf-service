@@ -10,10 +10,23 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.shiro.LDAPProviderConstants;
+import io.vertx.ext.auth.shiro.ShiroAuth;
+import io.vertx.ext.auth.shiro.ShiroAuthOptions;
+import io.vertx.ext.auth.shiro.ShiroAuthRealmType;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CookieHandler;
+import io.vertx.ext.web.handler.FormLoginHandler;
+import io.vertx.ext.web.handler.RedirectAuthHandler;
+import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.UserSessionHandler;
+import io.vertx.ext.web.sstore.LocalSessionStore;
 
 /**
  * Startet einen HTTP-Server, über den die Kommunikation mit dem Konfigurations-
@@ -79,10 +92,10 @@ public class ConfGatewayVerticle extends AbstractVerticle
     System.setProperty("hazelcast.logging.type", "slf4j");
 
     Logger log = LoggerFactory.getLogger(ConfGatewayVerticle.class);
-    VertxOptions options = new VertxOptions();
-    options.setClustered(true);
-    options.setClusterHost(getIP());
-    Vertx.clusteredVertx(options, res ->
+    VertxOptions vertxOptions = new VertxOptions();
+    vertxOptions.setClustered(true);
+    vertxOptions.setClusterHost(getIP());
+    Vertx.clusteredVertx(vertxOptions, res ->
     {
       if (res.succeeded())
       {
@@ -103,8 +116,27 @@ public class ConfGatewayVerticle extends AbstractVerticle
         {
           if (res1.succeeded())
           {
+            JsonObject ldapConfig = new JsonObject();
+            ldapConfig.put(LDAPProviderConstants.LDAP_USER_DN_TEMPLATE_FIELD,
+                "uid={0},ou=Direktorium,o=Landeshauptstadt München,c=de");
+            ldapConfig.put(LDAPProviderConstants.LDAP_URL,
+                "ldap://kvm-auth.tvc.muenchen.de:389");
+            ldapConfig.put(LDAPProviderConstants.LDAP_AUTHENTICATION_MECHANISM, "simple");
+            ShiroAuthOptions authOptions = new ShiroAuthOptions()
+                .setType(ShiroAuthRealmType.LDAP).setConfig(ldapConfig);
+            AuthProvider authProvider = ShiroAuth.create(vertx, authOptions);
+
             Router router = Router.router(vertx);
+            router.route().handler(CookieHandler.create());
             router.route().handler(BodyHandler.create());
+            router.route()
+                .handler(SessionHandler.create(LocalSessionStore.create(vertx))
+                    .setCookieHttpOnlyFlag(true).setCookieSecureFlag(true));
+            router.route().handler(UserSessionHandler.create(authProvider));
+            router.route(BASE_PATH + "/" + AdminService.ADMIN_SERVICE + "/*")
+              .handler(RedirectAuthHandler.create(authProvider, "/login.html"));
+            router.route("/loginhandler").handler(FormLoginHandler.create(authProvider));
+            router.route().handler(StaticHandler.create());
             weldVerticle.registerRoutes(router);
             vertx.deployVerticle(weldVerticle.container().select(ConfGatewayVerticle.class).get());
             HttpServer server = vertx.createHttpServer();

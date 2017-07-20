@@ -27,8 +27,8 @@ import io.vertx.ext.web.RoutingContext;
  * @author andor.ertsey
  *
  */
-@WebRoute(ConfGatewayVerticle.BASE_PATH + "/" + ConfService.CONF_SERVICE + "/*")
-public class ConfRouteHandler implements Handler<RoutingContext>
+@WebRoute(ConfGatewayVerticle.BASE_PATH + "/" + AdminService.ADMIN_SERVICE + "/*")
+public class AdminRouteHandler implements Handler<RoutingContext>
 {
   private static final int DEFAULT_CHUNK_SIZE = 1000;
 
@@ -36,12 +36,12 @@ public class ConfRouteHandler implements Handler<RoutingContext>
   private Logger log;
 
   @Inject
-  private ConfServiceCache confServices;
+  private AdminServiceCache adminServices;
 
   private int chunkSize;
 
   @Inject
-  public ConfRouteHandler(@Config("chunk") int chunkSize)
+  public AdminRouteHandler(@Config("chunk") int chunkSize)
   {
     this.chunkSize = chunkSize != 0 ? chunkSize : DEFAULT_CHUNK_SIZE;
   }
@@ -54,7 +54,7 @@ public class ConfRouteHandler implements Handler<RoutingContext>
 
     context.response().setChunked(true);
     String path = StringUtils.remove(context.request().path(),
-        ConfGatewayVerticle.BASE_PATH + "/" + ConfService.CONF_SERVICE);
+        ConfGatewayVerticle.BASE_PATH + "/" + AdminService.ADMIN_SERVICE);
 
     LinkedList<String> parts = new LinkedList<>(Arrays.asList(StringUtils.strip(path, "/").split("/")));
 
@@ -62,57 +62,21 @@ public class ConfRouteHandler implements Handler<RoutingContext>
     {
       String referat = parts.pop();
       String file = String.join("/", parts);
-      String serviceName = ConfService.CONF_SERVICE_BASE_NAME + referat;
-      handleConf(context, serviceName, file);
+      String serviceName = AdminService.ADMIN_SERVICE_BASE_NAME + referat;
+      handleAdmin(context, serviceName, file);
+
     } else
     {
       context.fail(400);
     }
   }
 
-  private void handleConf(RoutingContext context, String serviceName, String file)
+  private void handleAdmin(RoutingContext context, String serviceName, String file)
   {
-    ConfService cs = confServices.getService(serviceName);
-    if (cs != null)
+    AdminService as = adminServices.getService(serviceName);
+    if (as != null)
     {
-      cs.getFile(file, res2 ->
-      {
-        if (res2.succeeded())
-        {
-          context.response().setChunked(true);
-          context.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-
-          FileObject fo = new FileObject(res2.result());
-          String contentType = "Content-Type";
-
-          if (fo.getType().equals("conf"))
-          {
-            context.response().putHeader(contentType, "text/plain; charset=utf-8");
-            stream(fo.getContent(), context.response());
-          }
-          else
-          {
-            if (fo.getType().equals("class"))
-            {
-              context.response().putHeader(contentType, "application/java");
-            }
-            else
-            {
-              context.response().putHeader(contentType, "application/octet-stream");
-            }
-            stream(fo.getContentAsBytes(), context.response());
-          }
-          context.response().setStatusCode(200);
-          context.response().end();
-        } else
-        {
-          log.error("Calling getFile failed.", res2.cause());
-
-          confServices.validateProxy(serviceName);
-
-          context.fail(404);
-        }
-      });
+      context.response().end("OK");
     } else
     {
       context.fail(502);
