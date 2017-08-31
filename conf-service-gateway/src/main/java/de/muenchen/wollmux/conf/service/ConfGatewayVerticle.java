@@ -10,9 +10,11 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.shiro.LDAPProviderConstants;
 import io.vertx.ext.auth.shiro.ShiroAuth;
@@ -139,7 +141,8 @@ public class ConfGatewayVerticle extends AbstractVerticle
             router.route(BASE_PATH + "/login/*").handler(StaticHandler.create());
             weldVerticle.registerRoutes(router);
             vertx.deployVerticle(weldVerticle.container().select(ConfGatewayVerticle.class).get());
-            HttpServer server = vertx.createHttpServer();
+            HttpServer server = vertx.createHttpServer(new HttpServerOptions().setSsl(true)
+                .setKeyStoreOptions(new JksOptions().setPath("server-keystore.jks").setPassword("wibble")));
             server.requestHandler(router::accept).listen(getPort(), res2 ->
             {
               if (res2.succeeded())
