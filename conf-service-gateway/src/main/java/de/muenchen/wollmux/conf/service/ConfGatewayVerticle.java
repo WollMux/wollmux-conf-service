@@ -118,9 +118,9 @@ public class ConfGatewayVerticle extends AbstractVerticle
           {
             JsonObject ldapConfig = new JsonObject();
             ldapConfig.put(LDAPProviderConstants.LDAP_USER_DN_TEMPLATE_FIELD,
-                "uid={0},ou=Direktorium,o=Landeshauptstadt München,c=de");
+                "uid={0},ou=users,ou=dir,o=lhm,c=de");
             ldapConfig.put(LDAPProviderConstants.LDAP_URL,
-                "ldap://kvm-auth.tvc.muenchen.de:389");
+                "ldap://ldaptng.muenchen.de:389");
             ldapConfig.put(LDAPProviderConstants.LDAP_AUTHENTICATION_MECHANISM, "simple");
             ShiroAuthOptions authOptions = new ShiroAuthOptions()
                 .setType(ShiroAuthRealmType.LDAP).setConfig(ldapConfig);
