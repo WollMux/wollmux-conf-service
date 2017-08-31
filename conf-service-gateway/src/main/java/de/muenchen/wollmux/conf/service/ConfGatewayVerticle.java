@@ -134,9 +134,9 @@ public class ConfGatewayVerticle extends AbstractVerticle
                     .setCookieHttpOnlyFlag(true).setCookieSecureFlag(true));
             router.route().handler(UserSessionHandler.create(authProvider));
             router.route(BASE_PATH + "/" + AdminService.ADMIN_SERVICE + "/*")
-              .handler(RedirectAuthHandler.create(authProvider, "/login.html"));
-            router.route("/loginhandler").handler(FormLoginHandler.create(authProvider));
-            router.route().handler(StaticHandler.create());
+              .handler(RedirectAuthHandler.create(authProvider, BASE_PATH + "/login/login.html"));
+            router.route(BASE_PATH + "/login/loginhandler").handler(FormLoginHandler.create(authProvider));
+            router.route(BASE_PATH + "/login/*").handler(StaticHandler.create());
             weldVerticle.registerRoutes(router);
             vertx.deployVerticle(weldVerticle.container().select(ConfGatewayVerticle.class).get());
             HttpServer server = vertx.createHttpServer();
