@@ -17,7 +17,7 @@ import io.vertx.core.json.JsonObject;
 @VertxGen
 public interface AdminService
 {
-  public static final String ADMIN_SERVICE = "ADMIN";
+  public static final String ADMIN_SERVICE = "admin";
   public static final String ADMIN_SERVICE_ADDRESS = "admin.service.";
   public static final String ADMIN_SERVICE_BASE_NAME = "admin-service-";
 

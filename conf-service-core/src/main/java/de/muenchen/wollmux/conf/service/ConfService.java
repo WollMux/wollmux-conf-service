@@ -17,7 +17,7 @@ import io.vertx.core.json.JsonObject;
 @VertxGen
 public interface ConfService
 {
-  public static final String CONF_SERVICE = "CONF";
+  public static final String CONF_SERVICE = "conf";
   public static final String CONF_SERVICE_ADDRESS = "conf.service.";
   public static final String CONF_SERVICE_BASE_NAME = "conf-service-";
 
