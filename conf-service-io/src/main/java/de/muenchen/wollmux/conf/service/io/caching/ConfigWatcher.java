@@ -1,4 +1,4 @@
-package de.muenchen.wollmux.conf.service.caching;
+package de.muenchen.wollmux.conf.service.io.caching;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import org.apache.camel.ProducerTemplate;
 
 import de.muenchen.wollmux.conf.service.core.beans.Config;
+import de.muenchen.wollmux.conf.service.io.camel.ConfRouteBuilder;
 import io.vertx.core.logging.Logger;
 
 /**
@@ -29,21 +30,21 @@ public class ConfigWatcher
 {
   @Inject
   Logger log;
-  
+
   @Inject
   @Config("path")
   private String path;
 
   private WatchService watcher;
-  
+
   @Inject
-  private ProducerTemplate producerTemplate; 
+  private ProducerTemplate producerTemplate;
 
   @Inject
   public ConfigWatcher(WatchService watcher) {
     this.watcher = watcher;
   }
-  
+
   @PostConstruct
   private void init()
   {
@@ -83,7 +84,7 @@ public class ConfigWatcher
     WatchKey key = watcher.poll();
     if (key != null)
     {
-      producerTemplate.requestBody("direct:invalidateCache", new Object());
+      producerTemplate.requestBody(ConfRouteBuilder.ROUTE_INVALIDATE_CACHE, new Object());
       /*
        * Alle Events vom Key entfernen, sonst wird er jedes Mal wieder in die
        * Queue des WatchService gelegt. Sobald es neue Events gibt, wird der Key

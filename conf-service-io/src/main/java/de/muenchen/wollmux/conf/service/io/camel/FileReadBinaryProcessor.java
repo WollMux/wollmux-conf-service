@@ -1,4 +1,4 @@
-package de.muenchen.wollmux.conf.service.camel;
+package de.muenchen.wollmux.conf.service.io.camel;
 
 import java.io.File;
 import java.net.URI;

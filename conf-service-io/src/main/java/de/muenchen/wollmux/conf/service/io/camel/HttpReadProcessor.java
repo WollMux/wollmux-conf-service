@@ -1,4 +1,4 @@
-package de.muenchen.wollmux.conf.service.camel;
+package de.muenchen.wollmux.conf.service.io.camel;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;

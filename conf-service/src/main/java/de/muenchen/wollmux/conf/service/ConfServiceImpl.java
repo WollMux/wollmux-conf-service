@@ -12,8 +12,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 
-import de.muenchen.wollmux.conf.service.camel.ConfRouteBuilder;
 import de.muenchen.wollmux.conf.service.core.beans.Config;
+import de.muenchen.wollmux.conf.service.io.camel.ConfRouteBuilder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;

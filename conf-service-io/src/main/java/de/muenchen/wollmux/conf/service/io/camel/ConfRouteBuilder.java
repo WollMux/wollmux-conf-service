@@ -1,10 +1,11 @@
-package de.muenchen.wollmux.conf.service.camel;
+package de.muenchen.wollmux.conf.service.io.camel;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cache.CacheConstants;
 
@@ -12,6 +13,9 @@ import org.apache.camel.component.cache.CacheConstants;
 public class ConfRouteBuilder extends RouteBuilder
 {
   public static final String ROUTE_GET_FILE = "direct:getFile";
+  public static final String ROUTE_INVALIDATE_CACHE = "direct:invalidateCache";
+  public static final String ROUTE_READ_FILE = "direct:readFile";
+  public static final String ROUTE_WRITE_FILE = "direct:writeFile";
   private static final String ROUTE_READ_BINARY_HTTP = "direct:readBinaryHttp";
   private static final String ROUTE_READ_CONF_HTTP = "direct:readConfHttp";
   private static final String ROUTE_READ_BINARY_FILE = "direct:readBinaryFile";
@@ -20,7 +24,6 @@ public class ConfRouteBuilder extends RouteBuilder
   private static final String ROUTE_READ_LOCAL = "direct:readLocal";
   private static final String ROUTE_CONF_CACHE = "cache://ConfCache";
   private static final String ROUTE_CACHE = "direct:cache";
-  private static final String ROUTE_INVALIDATE_CACHE = "direct:invalidateCache";
 
   @Inject
   private IncludeProcessor includeProcessor;
@@ -37,11 +40,34 @@ public class ConfRouteBuilder extends RouteBuilder
   @Inject @Named("httpReadBinaryProcessor")
   private HttpReadBinaryProcessor httpReadBinaryProcessor;
 
+  @Inject
+  private FileWriteProcessor fileWriteProcessor;
+
   @Override
   public void configure() throws Exception
   {
     getContext().setTracing(false);
-    
+
+    from(ROUTE_WRITE_FILE).id("writeFile")
+      .process(fileWriteProcessor)
+      .end();
+
+    from(ROUTE_READ_FILE).id("readFile")
+      .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_GET))
+      .setHeader(CacheConstants.CACHE_KEY, header("url"))
+      .to(ROUTE_CONF_CACHE)
+      .choice().when(PredicateBuilder.and(
+          header(CacheConstants.CACHE_ELEMENT_WAS_FOUND).isNull(),
+          header("url").endsWith("conf")))
+        .choice().when(header("protocol").isEqualToIgnoreCase("file"))
+          .process(fileReadProcessor)
+          .to(ROUTE_CACHE)
+        .otherwise()
+          .process(httpReadProcessor)
+          .to(ROUTE_CACHE)
+        .end()
+      .end();
+
     from(ROUTE_GET_FILE).id("getFile")
       .setHeader(CacheConstants.CACHE_OPERATION, constant(CacheConstants.CACHE_OPERATION_GET))
       .setHeader(CacheConstants.CACHE_KEY, header("url"))

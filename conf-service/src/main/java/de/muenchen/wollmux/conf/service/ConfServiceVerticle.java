@@ -15,9 +15,9 @@ import javax.management.ObjectName;
 import org.apache.camel.main.Main;
 import org.jboss.weld.vertx.web.WeldWebVerticle;
 
-import de.muenchen.wollmux.conf.service.beans.ConfServiceMXBean;
-import de.muenchen.wollmux.conf.service.caching.ConfigWatcher;
 import de.muenchen.wollmux.conf.service.core.beans.Config;
+import de.muenchen.wollmux.conf.service.beans.ConfServiceMXBean;
+import de.muenchen.wollmux.conf.service.io.caching.ConfigWatcher;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;

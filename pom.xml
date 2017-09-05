@@ -12,6 +12,7 @@
 		<module>conf-service</module>
 		<module>conf-service-core</module>
 		<module>conf-service-admin</module>
+		<module>conf-service-io</module>
 	</modules>
 
 	<properties>
