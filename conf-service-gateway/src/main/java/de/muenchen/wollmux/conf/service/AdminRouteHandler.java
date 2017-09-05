@@ -61,22 +61,97 @@ public class AdminRouteHandler implements Handler<RoutingContext>
     if (parts.size() > 1)
     {
       String referat = parts.pop();
-      String file = String.join("/", parts);
+      String action = parts.pop();
+      String file = context.request().getParam("file");
+      if (file == null)
+        file = "conf/main.conf";
       String serviceName = AdminService.ADMIN_SERVICE_BASE_NAME + referat;
-      handleAdmin(context, serviceName, file);
-
+      if("write".equals(action))
+      {
+        String content = context.request().getParam("content");
+        handleWrite(context, serviceName, file, content);
+      }
+      else
+        handleForm(context, serviceName, file);
     } else
     {
       context.fail(400);
     }
   }
 
-  private void handleAdmin(RoutingContext context, String serviceName, String file)
+  private void handleWrite(RoutingContext context, String serviceName, String file, String content)
   {
     AdminService as = adminServices.getService(serviceName);
     if (as != null)
     {
-      context.response().end("OK");
+      as.writeFile(file, content, res ->
+      {
+        if (res.succeeded())
+        {
+          context.response().setChunked(true);
+          context.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+          context.response().putHeader("Content-Type", "text/html; charset=utf-8");
+          stream(res.result().getString("result"), context.response());
+          context.response().setStatusCode(200);
+          context.response().end();
+        } else
+        {
+          log.error("Calling writeFile failed.", res.cause());
+
+          adminServices.validateProxy(serviceName);
+
+          context.fail(404);
+        }
+      });
+    } else
+    {
+      context.fail(502);
+    }
+  }
+
+  private void handleForm(RoutingContext context, String serviceName, String file)
+  {
+    AdminService as = adminServices.getService(serviceName);
+    if (as != null)
+    {
+      as.getFile(file, res ->
+      {
+        if (res.succeeded())
+        {
+          context.response().setChunked(true);
+          context.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+
+          FileObject fo = new FileObject(res.result());
+          String contentType = "Content-Type";
+
+          if (fo.getType().equals("conf"))
+          {
+            context.response().putHeader(contentType, "text/html; charset=utf-8");
+            stream(fo.getContent(), context.response());
+          }
+          else
+          {
+            if (fo.getType().equals("class"))
+            {
+              context.response().putHeader(contentType, "application/java");
+            }
+            else
+            {
+              context.response().putHeader(contentType, "application/octet-stream");
+            }
+            stream(fo.getContentAsBytes(), context.response());
+          }
+          context.response().setStatusCode(200);
+          context.response().end();
+        } else
+        {
+          log.error("Calling getFile failed.", res.cause());
+
+          adminServices.validateProxy(serviceName);
+
+          context.fail(404);
+        }
+      });
     } else
     {
       context.fail(502);

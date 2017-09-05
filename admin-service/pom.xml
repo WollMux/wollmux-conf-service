@@ -5,12 +5,22 @@
     <artifactId>wollmux-conf-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>conf-service-admin</artifactId>
+  <artifactId>admin-service</artifactId>
   <dependencies>
   	<dependency>
   		<groupId>de.muenchen</groupId>
   		<artifactId>conf-service-core</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>de.muenchen</groupId>
+  		<artifactId>conf-service-io</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.github.jknack</groupId>
+  		<artifactId>handlebars</artifactId>
+  		<version>4.0.6</version>
   	</dependency>
   </dependencies>
 </project>

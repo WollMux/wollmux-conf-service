@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+	<form method="POST" action="/api/v1/admin/{{unit}}/write">
+	  <input type="text" id="file" name="file" hidden=true readonly value="{{file}}">
+		<textarea id="content" name="content">{{content}}</textarea>
+		<input type="submit" value="speichern" />
+	</form>
+</body>
+</html>

@@ -7,10 +7,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Interface des Konfigurationsservice. Wird in conf-service implementiert
+ * Interface des Administrationssservices. Wird in admin-service implementiert
  * und als Service registriert.
  *
- * @author andor.ertsey
+ * @author daniel.sikeler
  *
  */
 @ProxyGen
@@ -25,4 +25,12 @@ public interface AdminService
    * Liefert eine Datei der Konfiguration.
    */
   public void getFile(String file, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Schreibt einen Datei der Konfiguration auf die Platte.
+   * @param file Der Dateiname relativ zur PATH Variable.
+   * @param content Der Dateiinhalt.
+   * @param resultHandler Der Actionhandler, der das Ergebnis entgegen nimmt.
+   */
+  public void writeFile(String file, String content, Handler<AsyncResult<JsonObject>> resultHandler);
 }

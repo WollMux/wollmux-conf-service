@@ -22,7 +22,7 @@ var JsonObject = io.vertx.core.json.JsonObject;
 var JAdminService = de.muenchen.wollmux.conf.service.AdminService;
 
 /**
- Interface des Konfigurationsservice. Wird in conf-service implementiert
+ Interface des Administrationssservices. Wird in admin-service implementiert
  und als Service registriert.
 
  @class
@@ -43,6 +43,27 @@ var AdminService = function(j_val) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
       j_adminService["getFile(java.lang.String,io.vertx.core.Handler)"](file, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Schreibt einen Datei der Konfiguration auf die Platte.
+
+   @public
+   @param file {string} Der Dateiname relativ zur PATH Variable. 
+   @param content {string} Der Dateiinhalt. 
+   @param resultHandler {function} Der Actionhandler, der das Ergebnis entgegen nimmt. 
+   */
+  this.writeFile = function(file, content, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'string' && typeof __args[2] === 'function') {
+      j_adminService["writeFile(java.lang.String,java.lang.String,io.vertx.core.Handler)"](file, content, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {

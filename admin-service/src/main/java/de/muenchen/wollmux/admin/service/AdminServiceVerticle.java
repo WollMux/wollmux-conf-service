@@ -1,4 +1,4 @@
-package de.muenchen.wollmux.conf.service;
+package de.muenchen.wollmux.admin.service;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
@@ -6,6 +6,7 @@ import javax.inject.Inject;
 
 import org.jboss.weld.vertx.web.WeldWebVerticle;
 
+import de.muenchen.wollmux.conf.service.AdminService;
 import de.muenchen.wollmux.conf.service.core.beans.Config;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;

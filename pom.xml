@@ -11,7 +11,7 @@
 		<module>conf-service-gateway</module>
 		<module>conf-service</module>
 		<module>conf-service-core</module>
-		<module>conf-service-admin</module>
+		<module>admin-service</module>
 		<module>conf-service-io</module>
 	</modules>
 

@@ -1,4 +1,4 @@
-package de.muenchen.wollmux.conf.service.beans;
+package de.muenchen.wollmux.admin.service.beans;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
